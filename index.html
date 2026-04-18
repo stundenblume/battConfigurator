@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="emerald">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LiIon Battery Configurator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.7.2/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <style>
+        .battery-grid { display: grid; gap: 2px; }
+        .cell { border-radius: 50%; border: 1px solid #ccc; }
+        .is-invalid { stroke: red; stroke-width: 3; fill: #fee2e2; animation: blink 1s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body class="bg-base-200 min-h-screen p-4 md:p-8">
+    <div class="max-w-7xl mx-auto">
+        <header class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-primary">LiIon Configurator</h1>
+            <div class="flex gap-2">
+                <button onclick="exportData()" class="btn btn-outline btn-sm">Export JSON</button>
+                <label class="btn btn-outline btn-sm">
+                    Import JSON
+                    <input type="file" class="hidden" onchange="importData(event)" accept=".json">
+                </label>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Settings Column -->
+            <div class="space-y-6">
+                <!-- Cell Editor -->
+                <div class="card bg-base-100 shadow-xl">
+                    <div class="card-body">
+                        <h2 class="card-title">Zellen-Datenbank</h2>
+                        <div class="form-control w-full">
+                            <label class="label"><span class="label-text">Zellen Name</span></label>
+                            <input type="text" id="cell-name" placeholder="Samsung 30Q" class="input input-bordered w-full" />
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="form-control">
+                                <label class="label"><span class="label-text">Preis (€/Stk)</span></label>
+                                <input type="number" id="cell-price" step="0.01" value="5.00" class="input input-bordered w-full" />
+                            </div>
+                            <div class="form-control">
+                                <label class="label"><span class="label-text">Preis/100 (€)</span></label>
+                                <input type="number" id="cell-price100" step="0.01" value="450.00" class="input input-bordered w-full" />
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="form-control">
+                                <label class="label"><span class="label-text">Kapazität (mAh)</span></label>
+                                <input type="number" id="cell-cap" value="3000" class="input input-bordered w-full" />
+                            </div>
+                            <div class="form-control">
+                                <label class="label"><span class="label-text">Gewicht (g)</span></label>
+                                <input type="number" id="cell-weight" value="48" class="input input-bordered w-full" />
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="form-control">
+                                <label class="label"><span class="label-text">Dauerstrom (A)</span></label>
+                                <input type="number" id="cell-cont" value="15" class="input input-bordered w-full" />
+                            </div>
+                            <div class="form-control">
+                                <label class="label"><span class="label-text">Max Strom (A)</span></label>
+                                <input type="number" id="cell-max" value="30" class="input input-bordered w-full" />
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="form-control">
+                                <label class="label"><span class="label-text">Durchm. (mm)</span></label>
+                                <input type="number" id="cell-dia" value="18" class="input input-bordered w-full" />
+                            </div>
+                            <div class="form-control">
+                                <label class="label"><span class="label-text">Höhe (mm)</span></label>
+                                <input type="number" id="cell-height" value="65" class="input input-bordered w-full" />
+                            </div>
+                        </div>
+                        <button onclick="addCell()" class="btn btn-primary mt-4">Zelle Speichern</button>
+                    </div>
+                </div>
+
+                <!-- Pack Config -->
+                <div class="card bg-base-100 shadow-xl">
+                    <div class="card-body">
+                        <h2 class="card-title">Pack Konfiguration</h2>
+                        <div class="form-control w-full">
+                            <label class="label"><span class="label-text">Zelle wählen</span></label>
+                            <select id="cell-select" class="select select-bordered w-full" onchange="updateCalc()"></select>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="form-control">
+                                <label class="label"><span class="label-text">Seriell (S)</span></label>
+                                <input type="number" id="pack-s" value="12" class="input input-bordered w-full" onchange="updateCalc()" />
+                            </div>
+                            <div class="form-control">
+                                <label class="label"><span class="label-text">Parallel (P)</span></label>
+                                <input type="number" id="pack-p" value="8" class="input input-bordered w-full" onchange="updateCalc()" />
+                            </div>
+                        </div>
+                        <hr class="my-2">
+                        <h3 class="font-bold">Max. Bauraum (mm)</h3>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div class="form-control">
+                                <label class="label"><span class="label-text">L</span></label>
+                                <input type="number" id="box-l" value="250" class="input input-bordered w-full" onchange="updateCalc()" />
+                            </div>
+                            <div class="form-control">
+                                <label class="label"><span class="label-text">B</span></label>
+                                <input type="number" id="box-w" value="200" class="input input-bordered w-full" onchange="updateCalc()" />
+                            </div>
+                            <div class="form-control">
+                                <label class="label"><span class="label-text">H</span></label>
+                                <input type="number" id="box-h" value="70" class="input input-bordered w-full" onchange="updateCalc()" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visualization & Results -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Result Stats -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="stats shadow bg-base-100">
+                        <div class="stat px-4 py-2">
+                            <div class="stat-title">Spannung</div>
+                            <div id="res-volt" class="stat-value text-xl">44.4V</div>
+                            <div class="stat-desc">Nominal (3.7V)</div>
+                        </div>
+                    </div>
+                    <div class="stats shadow bg-base-100">
+                        <div class="stat px-4 py-2">
+                            <div class="stat-title">Kapazität</div>
+                            <div id="res-cap" class="stat-value text-xl">24Ah</div>
+                            <div id="res-wh" class="stat-desc">1065Wh</div>
+                        </div>
+                    </div>
+                    <div class="stats shadow bg-base-100">
+                        <div class="stat px-4 py-2">
+                            <div class="stat-title">Dauerstrom</div>
+                            <div id="res-cont" class="stat-value text-xl">120A</div>
+                            <div id="res-max" class="stat-desc">Peak: 240A</div>
+                        </div>
+                    </div>
+                    <div class="stats shadow bg-base-100">
+                        <div class="stat px-4 py-2">
+                            <div class="stat-title">Kosten/Gew.</div>
+                            <div id="res-cost" class="stat-value text-xl">432€</div>
+                            <div id="res-weight" class="stat-desc">4.6kg</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SVG Visualizer -->
+                <div class="card bg-base-100 shadow-xl overflow-hidden">
+                    <div class="card-body p-2">
+                        <div class="flex justify-between items-center mb-2 px-2">
+                            <h2 class="card-title">Vorschau (mm)</h2>
+                            <div id="dim-warning" class="badge badge-error hidden">PASST NICHT!</div>
+                        </div>
+                        <div class="bg-gray-100 flex items-center justify-center min-h-[400px] border rounded p-4">
+                            <svg id="visualizer" viewBox="0 0 300 300" class="max-w-full max-h-[500px] drop-shadow-md"></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comparison -->
+                <div class="card bg-base-100 shadow-xl">
+                    <div class="card-body">
+                        <div class="flex justify-between items-center">
+                            <h2 class="card-title">Vergleich</h2>
+                            <button onclick="saveComparison()" class="btn btn-secondary btn-sm">Aktuelle Konfig merken</button>
+                        </div>
+                        <div class="overflow-x-auto mt-4">
+                            <table class="table table-zebra w-full">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Konfig</th>
+                                        <th>Wh</th>
+                                        <th>A (cont)</th>
+                                        <th>Kosten</th>
+                                        <th>Aktion</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="comp-list"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let cells = JSON.parse(localStorage.getItem('battCells') || '[]');
+        let comparisons = JSON.parse(localStorage.getItem('battComps') || '[]');
+
+        function init() {
+            if (cells.length === 0) {
+                cells.push({ name: 'Samsung 30Q', price: 5, price100: 4.5, cap: 3000, weight: 48, cont: 15, max: 30, dia: 18.4, height: 65 });
+                cells.push({ name: 'Molicel P42A', price: 6.5, price100: 6, cap: 4200, weight: 67, cont: 45, max: 60, dia: 21.4, height: 70 });
+            }
+            renderCellSelect();
+            updateCalc();
+            renderComparisons();
+        }
+
+        function renderCellSelect() {
+            const select = document.getElementById('cell-select');
+            select.innerHTML = cells.map((c, i) => `<option value="${i}">${c.name}</option>`).join('');
+        }
+
+        function addCell() {
+            const cell = {
+                name: document.getElementById('cell-name').value || 'Unbekannt',
+                price: parseFloat(document.getElementById('cell-price').value),
+                price100: parseFloat(document.getElementById('cell-price100').value) / 100,
+                cap: parseFloat(document.getElementById('cell-cap').value),
+                weight: parseFloat(document.getElementById('cell-weight').value),
+                cont: parseFloat(document.getElementById('cell-cont').value),
+                max: parseFloat(document.getElementById('cell-max').value),
+                dia: parseFloat(document.getElementById('cell-dia').value),
+                height: parseFloat(document.getElementById('cell-height').value)
+            };
+            cells.push(cell);
+            localStorage.setItem('battCells', JSON.stringify(cells));
+            renderCellSelect();
+            document.getElementById('cell-select').value = cells.length - 1;
+            updateCalc();
+        }
+
+        function updateCalc() {
+            const cell = cells[document.getElementById('cell-select').value];
+            if (!cell) return;
+
+            const s = parseInt(document.getElementById('pack-s').value);
+            const p = parseInt(document.getElementById('pack-p').value);
+            const totalCells = s * p;
+
+            const boxL = parseFloat(document.getElementById('box-l').value);
+            const boxW = parseFloat(document.getElementById('box-w').value);
+            const boxH = parseFloat(document.getElementById('box-h').value);
+
+            // Calculations
+            const volt = (s * 3.7).toFixed(1);
+            const cap = (p * cell.cap / 1000).toFixed(1);
+            const wh = Math.round(s * 3.7 * p * cell.cap / 1000);
+            const contA = p * cell.cont;
+            const maxA = p * cell.max;
+            const weight = (totalCells * cell.weight / 1000).toFixed(1);
+            const priceEach = totalCells >= 100 ? cell.price100 : cell.price;
+            const cost = Math.round(totalCells * priceEach);
+
+            // Display
+            document.getElementById('res-volt').innerText = volt + 'V';
+            document.getElementById('res-cap').innerText = cap + 'Ah';
+            document.getElementById('res-wh').innerText = wh + 'Wh';
+            document.getElementById('res-cont').innerText = contA + 'A';
+            document.getElementById('res-max').innerText = 'Peak: ' + maxA + 'A';
+            document.getElementById('res-weight').innerText = weight + 'kg';
+            document.getElementById('res-cost').innerText = cost + '€';
+
+            // SVG Visualization
+            // Simple Grid Logic: S is rows, P is columns (or vice versa, let's say P columns, S rows)
+            const packW = p * cell.dia;
+            const packL = s * cell.dia;
+            const packH = cell.height;
+
+            const tooBig = packL > boxL || packW > boxW || packH > boxH;
+            document.getElementById('dim-warning').classList.toggle('hidden', !tooBig);
+
+            const svg = document.getElementById('visualizer');
+            const padding = 20;
+            const viewW = Math.max(boxL, packL) + padding * 2;
+            const viewH = Math.max(boxW, packW) + padding * 2;
+            svg.setAttribute('viewBox', `0 0 ${viewW} ${viewH}`);
+
+            let svgContent = '';
+            // Draw Box
+            svgContent += `<rect x="${padding}" y="${padding}" width="${boxL}" height="${boxW}" fill="none" stroke="#666" stroke-dasharray="5,5" />`;
+            svgContent += `<text x="${padding}" y="${padding - 5}" font-size="12" fill="#666">Bauraum: ${boxL}x${boxW}mm</text>`;
+
+            // Draw Cells
+            const cellColor = tooBig ? '#fee2e2' : '#dcfce7';
+            const strokeColor = tooBig ? '#ef4444' : '#22c55e';
+            const cellClass = tooBig ? 'is-invalid' : '';
+
+            for(let r=0; r<s; r++) {
+                for(let c=0; c<p; c++) {
+                    const cx = padding + r * cell.dia + cell.dia/2;
+                    const cy = padding + c * cell.dia + cell.dia/2;
+                    svgContent += `<circle cx="${cx}" cy="${cy}" r="${cell.dia/2 - 0.5}" fill="${cellColor}" stroke="${strokeColor}" class="${cellClass}" />`;
+                }
+            }
+
+            // Dimension lines
+            svgContent += `<text x="${padding}" y="${padding + packW + 15}" font-size="12" font-weight="bold" fill="${tooBig ? 'red' : 'green'}">Pack: ${packL.toFixed(1)} x ${packW.toFixed(1)} x ${packH}mm</text>`;
+
+            svg.innerHTML = svgContent;
+        }
+
+        function saveComparison() {
+            const cell = cells[document.getElementById('cell-select').value];
+            const s = document.getElementById('pack-s').value;
+            const p = document.getElementById('pack-p').value;
+            const totalCells = s * p;
+            const priceEach = totalCells >= 100 ? cell.price100 : cell.price;
+
+            comparisons.push({
+                name: prompt('Name für diesen Vergleich?', cell.name + ' ' + s + 'S' + p + 'P') || 'Vergleich',
+                config: s + 'S' + p + 'P',
+                wh: Math.round(s * 3.7 * p * cell.cap / 1000),
+                cont: p * cell.cont,
+                cost: Math.round(totalCells * priceEach)
+            });
+            localStorage.setItem('battComps', JSON.stringify(comparisons));
+            renderComparisons();
+        }
+
+        function renderComparisons() {
+            const list = document.getElementById('comp-list');
+            list.innerHTML = comparisons.map((c, i) => `
+                <tr>
+                    <td>${c.name}</td>
+                    <td>${c.config}</td>
+                    <td>${c.wh}Wh</td>
+                    <td>${c.cont}A</td>
+                    <td>${c.cost}€</td>
+                    <td><button onclick="deleteComp(${i})" class="btn btn-ghost btn-xs text-error">Entfernen</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function deleteComp(i) {
+            comparisons.splice(i, 1);
+            localStorage.setItem('battComps', JSON.stringify(comparisons));
+            renderComparisons();
+        }
+
+        function exportData() {
+            const data = { cells, comparisons };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'batt-config.json';
+            a.click();
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const data = JSON.parse(e.target.result);
+                if (data.cells) cells = data.cells;
+                if (data.comparisons) comparisons = data.comparisons;
+                localStorage.setItem('battCells', JSON.stringify(cells));
+                localStorage.setItem('battComps', JSON.stringify(comparisons));
+                renderCellSelect();
+                renderComparisons();
+                updateCalc();
+            };
+            reader.readAsText(file);
+        }
+
+        init();
+    </script>
+</body>
+</html>
