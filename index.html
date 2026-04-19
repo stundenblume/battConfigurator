@@ -15,6 +15,8 @@
         .clickable-row { cursor: pointer; transition: background 0.2s; }
         .clickable-row:hover { background-color: oklch(var(--b2)) !important; }
         .collapse-title { cursor: pointer; }
+        .sortable { cursor: pointer; user-select: none; }
+        .sortable:hover { background-color: oklch(var(--b2)); }
     </style>
 </head>
 <body class="bg-base-200 min-h-screen p-4 md:p-8">
@@ -121,27 +123,21 @@
                             </div>
                             <div class="grid grid-cols-3 gap-2">
                                 <div class="form-control">
-                                    <label class="label"><span class="label-text text-xs">Raster H</span></label>
+                                    <label class="label"><span class="label-text text-xs">Grid H</span></label>
                                     <input type="number" id="format-gridH" step="0.1" class="input input-bordered input-sm w-full" />
                                 </div>
                                 <div class="form-control">
-                                    <label class="label"><span class="label-text text-xs">Raster V</span></label>
+                                    <label class="label"><span class="label-text text-xs">Grid V</span></label>
                                     <input type="number" id="format-gridV" step="0.1" class="input input-bordered input-sm w-full" />
                                 </div>
                                 <div class="form-control">
-                                    <label class="label"><span class="label-text text-xs">Zell-Ø</span></label>
-                                    <input type="number" id="format-dia" step="0.1" class="input input-bordered input-sm w-full" />
-                                </div>
-                            </div>
-                            <div class="grid grid-cols-2 gap-2 mt-2">
-                                <div class="form-control">
-                                    <label class="label"><span class="label-text text-xs">Zell-Höhe</span></label>
-                                    <input type="number" id="format-height" step="0.1" class="input input-bordered input-sm w-full" />
-                                </div>
-                                <div class="form-control">
-                                    <label class="label"><span class="label-text text-xs text-secondary font-bold">Honey Vert</span></label>
+                                    <label class="label"><span class="label-text text-xs">Grid Honey</span></label>
                                     <input type="number" id="format-honeyV" step="0.1" class="input input-bordered input-sm w-full" />
                                 </div>
+                            </div>
+                            <div class="form-control">
+                                <label class="label"><span class="label-text text-xs font-bold">Zell-Höhe</span></label>
+                                <input type="number" id="format-height" step="0.1" class="input input-bordered input-sm w-full" />
                             </div>
                             <div class="flex gap-2 mt-4">
                                 <button onclick="newFormat()" class="btn btn-outline btn-xs flex-1">Neu</button>
@@ -300,13 +296,13 @@
                             <table class="table table-zebra w-full text-xs">
                                 <thead>
                                     <tr>
-                                        <th>Name</th>
-                                        <th>Konfig</th>
-                                        <th>Last</th>
-                                        <th>Fläche</th>
-                                        <th>Volumen</th>
-                                        <th>Energie</th>
-                                        <th>Kosten</th>
+                                        <th class="sortable" onclick="sortComparisons('name')">Name <span id="sort-name"></span></th>
+                                        <th class="sortable" onclick="sortComparisons('s')">Konfig <span id="sort-s"></span></th>
+                                        <th class="sortable" onclick="sortComparisons('loadPercent')">Last <span id="sort-loadPercent"></span></th>
+                                        <th class="sortable" onclick="sortComparisons('areaUtil')">Fläche <span id="sort-areaUtil"></span></th>
+                                        <th class="sortable" onclick="sortComparisons('volUtil')">Volumen <span id="sort-volUtil"></span></th>
+                                        <th class="sortable" onclick="sortComparisons('wh')">Energie <span id="sort-wh"></span></th>
+                                        <th class="sortable" onclick="sortComparisons('cost')">Kosten <span id="sort-cost"></span></th>
                                         <th>Links</th>
                                         <th></th>
                                     </tr>
@@ -325,6 +321,7 @@
         let cases = JSON.parse(localStorage.getItem('battCases') || '[]');
         let formats = JSON.parse(localStorage.getItem('battFormats') || '[]');
         let comparisons = JSON.parse(localStorage.getItem('battComps') || '[]');
+        let sortState = { column: null, direction: 'asc' };
 
         function init() {
             if (!Array.isArray(cells)) cells = [];
@@ -333,8 +330,8 @@
             if (!Array.isArray(comparisons)) comparisons = [];
 
             if (formats.length === 0) {
-                formats.push({ id: 1, name: '18650', gridH: 19.5, gridV: 19.5, dia: 18.4, height: 65, honeyV: 17.5 });
-                formats.push({ id: 2, name: '21700', gridH: 22.5, gridV: 22.5, dia: 21.4, height: 70, honeyV: 19.5 });
+                formats.push({ id: 1, name: '18650', gridH: 19.5, gridV: 19.5, height: 65, honeyV: 17.5 });
+                formats.push({ id: 2, name: '21700', gridH: 22.5, gridV: 22.5, height: 70, honeyV: 19.5 });
             }
             if (cells.length === 0) cells.push({ id: 1, name: 'Samsung 30Q', price: 5, price100: 4.5, cap: 3000, cont: 15, max: 30, formatId: 1 });
             if (cases.length === 0) cases.push({ id: 1, name: 'Manuell', l: 250, w: 200, h: 70, price: 0, url: '' });
@@ -374,7 +371,6 @@
             document.getElementById('format-name').value = format.name;
             document.getElementById('format-gridH').value = format.gridH;
             document.getElementById('format-gridV').value = format.gridV;
-            document.getElementById('format-dia').value = format.dia;
             document.getElementById('format-height').value = format.height;
             document.getElementById('format-honeyV').value = format.honeyV || (format.gridV * 0.866).toFixed(1);
         }
@@ -382,7 +378,6 @@
             document.getElementById('format-name').value = ''; 
             document.getElementById('format-gridH').value = 22.5;
             document.getElementById('format-gridV').value = 22.5;
-            document.getElementById('format-dia').value = 21.4;
             document.getElementById('format-height').value = 70;
             document.getElementById('format-honeyV').value = 19.5;
         }
@@ -392,7 +387,6 @@
                 name: document.getElementById('format-name').value || 'Unbenannt',
                 gridH: parseFloat(document.getElementById('format-gridH').value),
                 gridV: parseFloat(document.getElementById('format-gridV').value),
-                dia: parseFloat(document.getElementById('format-dia').value),
                 height: parseFloat(document.getElementById('format-height').value),
                 honeyV: parseFloat(document.getElementById('format-honeyV').value)
             };
@@ -471,7 +465,7 @@
         }
         function deleteCase() {
             const idx = document.getElementById('editor-case-select').value;
-            if (cases.length <= 1 || !confirm("Löschen?")) return;
+            if (cells.length <= 1 || !confirm("Löschen?")) return;
             cases.splice(idx, 1);
             localStorage.setItem('battCases', JSON.stringify(cases));
             renderCaseSelects(); loadCaseToEditor(); updateCalc();
@@ -487,8 +481,10 @@
         // --- Calculator ---
         function updateCalc() {
             try {
-                const cell = cells[document.getElementById('cell-select').value];
-                const packCase = cases[document.getElementById('case-select').value];
+                const cellIdx = document.getElementById('cell-select').value;
+                const cell = cells[cellIdx];
+                const packCaseIdx = document.getElementById('case-select').value;
+                const packCase = cases[packCaseIdx];
                 const power = parseFloat(document.getElementById('pack-power').value) || 0;
                 if (!cell || !packCase) return;
                 const format = formats.find(f => f.id == cell.formatId) || formats[0];
@@ -522,9 +518,10 @@
 
                 let packL = lRows * format.gridH;
                 let packW = lCols * format.gridV;
+                const visualDia = format.dia || (format.gridH - 1.1);
                 if (isHoney) {
                     packL = (lRows + 0.5) * format.gridH;
-                    packW = (lCols - 1) * format.honeyV + format.dia;
+                    packW = (lCols - 1) * format.honeyV + visualDia;
                 }
 
                 const caseArea = packCase.l * packCase.w;
@@ -546,7 +543,11 @@
                 const vH = Math.max(packCase.w, packW) + pad * 2;
                 svg.setAttribute('viewBox', `0 0 ${vW} ${vH}`);
 
-                let svgC = `<rect x="${pad}" y="${pad}" width="${boxL=packCase.l}" height="${boxW=packCase.w}" fill="none" stroke="#666" stroke-dasharray="5,5" /><text x="${pad}" y="${pad - 5}" font-size="12" fill="#666">${boxL}x${boxW}mm</text>`;
+                // Calculate centering offsets
+                const centerOffsetX = (packCase.l - packL) / 2;
+                const centerOffsetY = (packCase.w - packW) / 2;
+
+                let svgC = `<rect x="${pad}" y="${pad}" width="${packCase.l}" height="${packCase.w}" fill="none" stroke="#666" stroke-dasharray="5,5" /><text x="${pad}" y="${pad - 5}" font-size="12" fill="#666">${packCase.l}x${packCase.w}mm</text>`;
                 const cellClass = tooBig ? 'is-invalid' : '';
                 const cCol = tooBig ? '#fee2e2' : '#dcfce7';
                 const sCol = tooBig ? '#ef4444' : '#22c55e';
@@ -555,11 +556,12 @@
                     const cIdx = Math.floor(i / lRows);
                     let offX = 0;
                     if (isHoney && cIdx % 2 === 1) offX = format.gridH / 2;
-                    const cx = pad + rIdx * format.gridH + format.gridH/2 + offX;
-                    const cy = pad + cIdx * (isHoney ? format.honeyV : format.gridV) + (isHoney ? format.dia/2 : format.gridV/2);
-                    svgC += `<circle cx="${cx}" cy="${cy}" r="${format.dia/2 - 0.5}" fill="${cCol}" stroke="${sCol}" class="${cellClass}" />`;
+                    
+                    const cx = pad + centerOffsetX + rIdx * format.gridH + format.gridH/2 + offX;
+                    const cy = pad + centerOffsetY + cIdx * (isHoney ? format.honeyV : format.gridV) + (isHoney ? visualDia/2 : format.gridV/2);
+                    svgC += `<circle cx="${cx}" cy="${cy}" r="${visualDia/2 - 0.5}" fill="${cCol}" stroke="${sCol}" class="${cellClass}" />`;
                 }
-                svgC += `<text x="${pad}" y="${pad + packW + 15}" font-size="12" font-weight="bold" fill="${tooBig ? 'red' : 'green'}">Pack: ${packL.toFixed(1)} x ${packW.toFixed(1)} x ${format.height}mm</text>`;
+                svgC += `<text x="${pad}" y="${pad + packCase.w + 15}" font-size="12" font-weight="bold" fill="${tooBig ? 'red' : 'green'}">Pack: ${packL.toFixed(1)} x ${packW.toFixed(1)} x ${format.height}mm</text>`;
                 svg.innerHTML = svgC;
             } catch (e) { console.error(e); }
         }
@@ -567,8 +569,10 @@
         function saveComparison() {
             const cellSelect = document.getElementById('cell-select');
             const caseSelect = document.getElementById('case-select');
-            const cell = cells[cellSelect.value];
-            const packCase = cases[caseSelect.value];
+            const cellIdx = cellSelect.value;
+            const caseIdx = caseSelect.value;
+            const cell = cells[cellIdx];
+            const packCase = cases[caseIdx];
             const power = parseFloat(document.getElementById('pack-power').value) || 0;
             
             if (!cell || !packCase) return alert("Bitte eine Zelle wählen.");
@@ -587,9 +591,10 @@
             const isHoney = document.getElementById('layout-type').value === 'honey';
             let packL = lRows * format.gridH;
             let packW = lCols * format.gridV;
+            const visualDia = format.dia || (format.gridH - 1.1);
             if (isHoney) {
                 packL = (lRows + 0.5) * format.gridH;
-                packW = (lCols - 1) * format.honeyV + format.dia;
+                packW = (lCols - 1) * format.honeyV + visualDia;
             }
             const caseArea = packCase.l * packCase.w;
             const packArea = packL * packW;
@@ -598,8 +603,8 @@
 
             comparisons.push({ 
                 name: document.getElementById('pack-name').value || `${cell.name} ${s}S${p}P`, 
-                cellIdx: parseInt(cellSelect.value), 
-                caseIdx: parseInt(caseSelect.value), 
+                cellIdx: parseInt(cellIdx), 
+                caseIdx: parseInt(caseIdx), 
                 s, p, power, loadPercent, areaUtil, volUtil,
                 lRows: document.getElementById('layout-rows').value, 
                 lType: document.getElementById('layout-type').value, 
@@ -626,9 +631,41 @@
             updateCalc();
         }
 
+        function sortComparisons(column) {
+            if (sortState.column === column) {
+                sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortState.column = column;
+                sortState.direction = 'asc';
+            }
+            
+            comparisons.sort((a, b) => {
+                let valA = a[column];
+                let valB = b[column];
+                
+                if (column === 'name') {
+                    valA = (valA || '').toLowerCase();
+                    valB = (valB || '').toLowerCase();
+                }
+                
+                if (valA < valB) return sortState.direction === 'asc' ? -1 : 1;
+                if (valA > valB) return sortState.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+            
+            renderComparisons();
+        }
+
         function renderComparisons() {
             const list = document.getElementById('comp-list');
             if (!list) return;
+
+            const columns = ['name', 's', 'loadPercent', 'areaUtil', 'volUtil', 'wh', 'cost'];
+            columns.forEach(col => {
+                const el = document.getElementById(`sort-${col}`);
+                if (el) el.innerText = sortState.column === col ? (sortState.direction === 'asc' ? ' 🔼' : ' 🔽') : '';
+            });
+
             list.innerHTML = comparisons.map((c, i) => {
                 const cell = cells[c.cellIdx] || { name: '?' };
                 const packCase = cases[c.caseIdx] || { url: '' };
