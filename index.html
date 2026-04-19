@@ -42,9 +42,9 @@
                         <div class="form-control w-full">
                             <label class="label">
                                 <span class="label-text">Zellen Name</span>
-                                <div class="flex gap-2">
-                                    <a id="cell-link-google" href="#" target="_blank" class="label-text-alt link link-primary">Google ↗</a>
-                                    <a id="cell-link-lygte" href="#" target="_blank" class="label-text-alt link link-secondary">Lygte ↗</a>
+                                <div class="flex gap-2 text-xs">
+                                    <a id="cell-link-google" href="#" target="_blank" class="link link-primary">Google ↗</a>
+                                    <a id="cell-link-lygte" href="#" target="_blank" class="link link-secondary">Lygte ↗</a>
                                 </div>
                             </label>
                             <input type="text" id="cell-name" placeholder="Samsung 30Q" class="input input-bordered w-full" />
@@ -65,19 +65,13 @@
                                 <input type="number" id="cell-cap" value="3000" class="input input-bordered w-full" />
                             </div>
                             <div class="form-control">
-                                <label class="label"><span class="label-text">Gewicht (g)</span></label>
-                                <input type="number" id="cell-weight" value="48" class="input input-bordered w-full" />
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <div class="form-control">
                                 <label class="label"><span class="label-text">Dauerstrom (A)</span></label>
                                 <input type="number" id="cell-cont" value="15" class="input input-bordered w-full" />
                             </div>
-                            <div class="form-control">
-                                <label class="label"><span class="label-text">Max Strom (A)</span></label>
-                                <input type="number" id="cell-max" value="30" class="input input-bordered w-full" />
-                            </div>
+                        </div>
+                        <div class="form-control">
+                            <label class="label"><span class="label-text">Max Strom (A)</span></label>
+                            <input type="number" id="cell-max" value="30" class="input input-bordered w-full" />
                         </div>
                         <div class="form-control w-full">
                             <label class="label"><span class="label-text font-bold">Format (Rastermaß)</span></label>
@@ -85,6 +79,10 @@
                                 <option value="18650">18650 (Standard Halter)</option>
                                 <option value="21700">21700 (22.5mm Raster)</option>
                             </select>
+                        </div>
+                        <div class="form-control w-full">
+                            <label class="label"><span class="label-text font-bold">Eigener Link</span></label>
+                            <input type="url" id="cell-custom-link" placeholder="https://nkon.nl/..." class="input input-bordered w-full" />
                         </div>
                         <div class="form-control w-full">
                             <label class="label"><span class="label-text">Notizen</span></label>
@@ -148,10 +146,7 @@
                     <div class="card-body">
                         <div class="flex justify-between items-center mb-4">
                             <h2 class="card-title">Konfiguration</h2>
-                            <div class="flex gap-2 items-center">
-                                <div id="res-total-cells" class="badge badge-secondary">0 Zellen</div>
-                                <button onclick="saveComparison()" class="btn btn-secondary btn-sm">Speichern</button>
-                            </div>
+                            <div id="res-total-cells" class="badge badge-secondary">0 Zellen</div>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="space-y-4">
@@ -194,9 +189,12 @@
                             <div class="space-y-4">
                                 <div class="form-control">
                                     <label class="label"><span class="label-text font-bold">Notizen</span></label>
-                                    <textarea id="pack-notes" class="textarea textarea-bordered h-full" placeholder="Konfig Details..."></textarea>
+                                    <textarea id="pack-notes" class="textarea textarea-bordered h-full min-h-[150px]" placeholder="Konfig Details..."></textarea>
                                 </div>
                             </div>
+                        </div>
+                        <div class="card-actions justify-end mt-4">
+                            <button onclick="saveComparison()" class="btn btn-secondary btn-sm">Speichern</button>
                         </div>
                     </div>
                 </div>
@@ -293,10 +291,10 @@
             document.getElementById('cell-price').value = cell.price;
             document.getElementById('cell-price100').value = cell.price100;
             document.getElementById('cell-cap').value = cell.cap;
-            document.getElementById('cell-weight').value = cell.weight;
             document.getElementById('cell-cont').value = cell.cont;
             document.getElementById('cell-max').value = cell.max;
             document.getElementById('cell-format').value = cell.format || '18650';
+            document.getElementById('cell-custom-link').value = cell.customLink || '';
             document.getElementById('cell-notes').value = cell.notes || '';
             updateCellLinks(cell.name);
         }
@@ -309,12 +307,13 @@
         function newCell() {
             document.getElementById('cell-name').value = '';
             document.getElementById('cell-notes').value = '';
+            document.getElementById('cell-custom-link').value = '';
             document.getElementById('cell-format').value = '18650';
         }
 
         function addCell() {
             const name = document.getElementById('cell-name').value || 'Unbekannt';
-            const cellData = { id: Date.now(), name, price: parseFloat(document.getElementById('cell-price').value), price100: parseFloat(document.getElementById('cell-price100').value), cap: parseFloat(document.getElementById('cell-cap').value), weight: parseFloat(document.getElementById('cell-weight').value), cont: parseFloat(document.getElementById('cell-cont').value), max: parseFloat(document.getElementById('cell-max').value), notes: document.getElementById('cell-notes').value, format: document.getElementById('cell-format').value };
+            const cellData = { id: Date.now(), name, price: parseFloat(document.getElementById('cell-price').value), price100: parseFloat(document.getElementById('cell-price100').value), cap: parseFloat(document.getElementById('cell-cap').value), weight: 0, cont: parseFloat(document.getElementById('cell-cont').value), max: parseFloat(document.getElementById('cell-max').value), notes: document.getElementById('cell-notes').value, format: document.getElementById('cell-format').value, customLink: document.getElementById('cell-custom-link').value };
             const idx = cells.findIndex(c => c.name === name);
             if (idx >= 0) cells[idx] = cellData; else cells.push(cellData);
             localStorage.setItem('battCells', JSON.stringify(cells));
@@ -395,7 +394,7 @@
                 document.getElementById('res-max').innerText = 'Peak: ' + (p * cell.max) + 'A';
                 
                 const cost = Math.round(totalCells * (totalCells >= 100 ? cell.price100 : cell.price) + (packCase ? packCase.price : 0));
-                const weight = (totalCells * cell.weight / 1000).toFixed(1);
+                const weight = (totalCells * (cell.weight || 0) / 1000).toFixed(1);
                 const priceKwh = nominalWh > 0 ? Math.round(cost / (nominalWh / 1000)) : 0;
                 
                 document.getElementById('res-cost').innerText = cost + '€';
@@ -433,7 +432,7 @@
                     let offX = 0;
                     if (isHoney && cIdx % 2 === 1) offX = gridH / 2;
                     const cx = pad + rIdx * gridH + gridH/2 + offX;
-                    const cy = pad + cIdx * gridV + gridV/2;
+                    const cy = pad + cIdx * (isHoney ? gridV : gridV) + gridV/2;
                     svgC += `<circle cx="${cx}" cy="${cy}" r="${actualDia/2 - 0.5}" fill="${cCol}" stroke="${sCol}" class="${cellClass}" />`;
                 }
                 svgC += `<text x="${pad}" y="${pad + packW + 15}" font-size="12" font-weight="bold" fill="${tooBig ? 'red' : 'green'}">Pack: ${packL.toFixed(1)} x ${packW.toFixed(1)} x ${packHeight}mm</text>`;
@@ -511,7 +510,7 @@
                     <td>${c.cost || 0}€</td>
                     <td>
                         <div class="flex gap-1">
-                            ${cell.name !== '?' ? `<a href="https://www.google.com/search?q=${encodeURIComponent(cell.name)}" target="_blank" onclick="event.stopPropagation()" class="btn btn-ghost btn-xs">Cell</a>` : ''}
+                            ${cell.customLink ? `<a href="${cell.customLink}" target="_blank" onclick="event.stopPropagation()" class="btn btn-ghost btn-xs">Link</a>` : `<a href="https://www.google.com/search?q=${encodeURIComponent(cell.name)}" target="_blank" onclick="event.stopPropagation()" class="btn btn-ghost btn-xs">Cell</a>`}
                             ${packCase.url ? `<a href="${packCase.url}" target="_blank" onclick="event.stopPropagation()" class="btn btn-ghost btn-xs">Case</a>` : ''}
                         </div>
                     </td>
