@@ -11,6 +11,8 @@
         .cell { border-radius: 50%; border: 1px solid #ccc; }
         .is-invalid { stroke: red; stroke-width: 3; fill: #fee2e2; animation: blink 1s infinite; }
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        .clickable-row { cursor: pointer; transition: background 0.2s; }
+        .clickable-row:hover { background-color: oklch(var(--b2)) !important; }
     </style>
 </head>
 <body class="bg-base-200 min-h-screen p-4 md:p-8">
@@ -27,7 +29,6 @@
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Settings Column -->
             <div class="space-y-6">
                 <!-- Cell Editor -->
                 <div class="card bg-base-100 shadow-xl">
@@ -41,7 +42,10 @@
                         <div class="form-control w-full">
                             <label class="label">
                                 <span class="label-text">Zellen Name</span>
-                                <a id="cell-link" href="#" target="_blank" class="label-text-alt link link-primary">Suche ↗</a>
+                                <div class="flex gap-2">
+                                    <a id="cell-link-google" href="#" target="_blank" class="label-text-alt link link-primary">Google ↗</a>
+                                    <a id="cell-link-lygte" href="#" target="_blank" class="label-text-alt link link-secondary">Lygte ↗</a>
+                                </div>
                             </label>
                             <input type="text" id="cell-name" placeholder="Samsung 30Q" class="input input-bordered w-full" />
                         </div>
@@ -75,21 +79,19 @@
                                 <input type="number" id="cell-max" value="30" class="input input-bordered w-full" />
                             </div>
                         </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <div class="form-control">
-                                <label class="label"><span class="label-text">Durchm. (mm)</span></label>
-                                <input type="number" id="cell-dia" value="18" class="input input-bordered w-full" />
-                            </div>
-                            <div class="form-control">
-                                <label class="label"><span class="label-text">Höhe (mm)</span></label>
-                                <input type="number" id="cell-height" value="65" class="input input-bordered w-full" />
-                            </div>
+                        <div class="form-control w-full">
+                            <label class="label"><span class="label-text font-bold">Format (Rastermaß)</span></label>
+                            <select id="cell-format" class="select select-bordered w-full">
+                                <option value="18650">18650 (Standard Halter)</option>
+                                <option value="21700">21700 (22.5mm Raster)</option>
+                            </select>
                         </div>
                         <div class="form-control w-full">
                             <label class="label"><span class="label-text">Notizen</span></label>
                             <textarea id="cell-notes" class="textarea textarea-bordered h-20" placeholder="z.B. Bezugsquelle..."></textarea>
                         </div>
                         <div class="flex gap-2 mt-4">
+                            <button onclick="newCell()" class="btn btn-outline btn-sm">Neu</button>
                             <button onclick="addCell()" class="btn btn-primary flex-1 btn-sm">Speichern</button>
                             <button id="btn-delete-cell" onclick="deleteCell()" class="btn btn-error btn-outline btn-sm">Löschen</button>
                         </div>
@@ -131,6 +133,7 @@
                             <input type="url" id="case-url" placeholder="https://..." class="input input-bordered w-full" />
                         </div>
                         <div class="flex gap-2 mt-4">
+                            <button onclick="newCase()" class="btn btn-outline btn-sm">Neu</button>
                             <button onclick="addCase()" class="btn btn-primary flex-1 btn-sm">Speichern</button>
                             <button id="btn-delete-case" onclick="deleteCase()" class="btn btn-error btn-outline btn-sm">Löschen</button>
                         </div>
@@ -145,7 +148,10 @@
                     <div class="card-body">
                         <div class="flex justify-between items-center mb-4">
                             <h2 class="card-title">Konfiguration</h2>
-                            <div id="res-total-cells" class="badge badge-secondary">0 Zellen</div>
+                            <div class="flex gap-2 items-center">
+                                <div id="res-total-cells" class="badge badge-secondary">0 Zellen</div>
+                                <button onclick="saveComparison()" class="btn btn-secondary btn-sm">Speichern</button>
+                            </div>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="space-y-4">
@@ -160,21 +166,21 @@
                                     </div>
                                     <div class="form-control">
                                         <label class="label"><span class="label-text font-bold">Gehäuse</span></label>
-                                        <select id="case-select" class="select select-bordered w-full" onchange="syncCaseToBox(); updateCalc()"></select>
+                                        <select id="case-select" class="select select-bordered w-full" onchange="updateCalc()"></select>
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-4 gap-2 text-center">
                                     <div class="form-control">
                                         <label class="label justify-center"><span class="label-text">S</span></label>
-                                        <input type="number" id="pack-s" value="12" class="input input-bordered w-full" onchange="updateCalc()" />
+                                        <input type="number" id="pack-s" value="20" class="input input-bordered w-full" onchange="updateCalc()" />
                                     </div>
                                     <div class="form-control">
                                         <label class="label justify-center"><span class="label-text">P</span></label>
-                                        <input type="number" id="pack-p" value="8" class="input input-bordered w-full" onchange="updateCalc()" />
+                                        <input type="number" id="pack-p" value="3" class="input input-bordered w-full" onchange="updateCalc()" />
                                     </div>
                                     <div class="form-control">
                                         <label class="label justify-center"><span class="label-text">L-Reihe</span></label>
-                                        <input type="number" id="layout-rows" value="12" class="input input-bordered w-full" onchange="updateCalc()" />
+                                        <input type="number" id="layout-rows" value="20" class="input input-bordered w-full" onchange="updateCalc()" />
                                     </div>
                                     <div class="form-control">
                                         <label class="label justify-center"><span class="label-text">Typ</span></label>
@@ -200,7 +206,13 @@
                     <div class="stats shadow bg-base-100"><div class="stat px-4 py-2"><div class="stat-title">Volt</div><div id="res-volt" class="stat-value text-xl">-</div></div></div>
                     <div class="stats shadow bg-base-100"><div class="stat px-4 py-2"><div class="stat-title">Kap/Energie</div><div id="res-cap" class="stat-value text-xl">-</div><div id="res-wh" class="stat-desc">-</div></div></div>
                     <div class="stats shadow bg-base-100"><div class="stat px-4 py-2"><div class="stat-title">Strom (cont)</div><div id="res-cont" class="stat-value text-xl">-</div><div id="res-max" class="stat-desc">-</div></div></div>
-                    <div class="stats shadow bg-base-100"><div class="stat px-4 py-2"><div class="stat-title">Kosten/Gew.</div><div id="res-cost" class="stat-value text-xl">-</div><div id="res-weight" class="stat-desc">-</div></div></div>
+                    <div class="stats shadow bg-base-100">
+                        <div class="stat px-4 py-2">
+                            <div class="stat-title">Kosten/Gew.</div>
+                            <div id="res-cost" class="stat-value text-xl">-</div>
+                            <div id="res-weight-costkwh" class="stat-desc">-</div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- SVG Visualizer -->
@@ -213,22 +225,13 @@
                         <div class="bg-gray-100 flex items-center justify-center min-h-[400px] border rounded p-4">
                             <svg id="visualizer" viewBox="0 0 300 300" class="max-w-full max-h-[500px] drop-shadow-md"></svg>
                         </div>
-                        <!-- Manual Box Override (Hidden if case selected) -->
-                        <div id="manual-box" class="grid grid-cols-3 gap-2 p-2">
-                            <input type="number" id="box-l" value="250" class="input input-sm input-bordered" onchange="updateCalc()" />
-                            <input type="number" id="box-w" value="200" class="input input-sm input-bordered" onchange="updateCalc()" />
-                            <input type="number" id="box-h" value="70" class="input input-sm input-bordered" onchange="updateCalc()" />
-                        </div>
                     </div>
                 </div>
 
                 <!-- Comparison -->
                 <div class="card bg-base-100 shadow-xl">
                     <div class="card-body">
-                        <div class="flex justify-between items-center">
-                            <h2 class="card-title">Vergleich</h2>
-                            <button onclick="saveComparison()" class="btn btn-secondary btn-sm">Speichern</button>
-                        </div>
+                        <h2 class="card-title">Vergleich</h2>
                         <div class="overflow-x-auto mt-4">
                             <table class="table table-zebra w-full">
                                 <thead>
@@ -256,7 +259,11 @@
         let comparisons = JSON.parse(localStorage.getItem('battComps') || '[]');
 
         function init() {
-            if (cells.length === 0) cells.push({ id: 1, name: 'Samsung 30Q', price: 5, price100: 4.5, cap: 3000, weight: 48, cont: 15, max: 30, dia: 18.4, height: 65 });
+            if (!Array.isArray(cells)) cells = [];
+            if (!Array.isArray(cases)) cases = [];
+            if (!Array.isArray(comparisons)) comparisons = [];
+
+            if (cells.length === 0) cells.push({ id: 1, name: 'Samsung 30Q', price: 5, price100: 4.5, cap: 3000, weight: 48, cont: 15, max: 30, format: '18650' });
             if (cases.length === 0) cases.push({ id: 1, name: 'Manuell', l: 250, w: 200, h: 70, price: 0, url: '' });
             
             renderCellSelects();
@@ -289,15 +296,25 @@
             document.getElementById('cell-weight').value = cell.weight;
             document.getElementById('cell-cont').value = cell.cont;
             document.getElementById('cell-max').value = cell.max;
-            document.getElementById('cell-dia').value = cell.dia;
-            document.getElementById('cell-height').value = cell.height;
+            document.getElementById('cell-format').value = cell.format || '18650';
             document.getElementById('cell-notes').value = cell.notes || '';
-            document.getElementById('cell-link').href = `https://www.google.com/search?q=${encodeURIComponent(cell.name)}`;
+            updateCellLinks(cell.name);
+        }
+
+        function updateCellLinks(name) {
+            document.getElementById('cell-link-google').href = `https://www.google.com/search?q=${encodeURIComponent(name)}`;
+            document.getElementById('cell-link-lygte').href = `https://www.google.com/search?q=site:lygte-info.dk+${encodeURIComponent(name)}`;
+        }
+
+        function newCell() {
+            document.getElementById('cell-name').value = '';
+            document.getElementById('cell-notes').value = '';
+            document.getElementById('cell-format').value = '18650';
         }
 
         function addCell() {
             const name = document.getElementById('cell-name').value || 'Unbekannt';
-            const cellData = { id: Date.now(), name, price: parseFloat(document.getElementById('cell-price').value), price100: parseFloat(document.getElementById('cell-price100').value), cap: parseFloat(document.getElementById('cell-cap').value), weight: parseFloat(document.getElementById('cell-weight').value), cont: parseFloat(document.getElementById('cell-cont').value), max: parseFloat(document.getElementById('cell-max').value), dia: parseFloat(document.getElementById('cell-dia').value), height: parseFloat(document.getElementById('cell-height').value), notes: document.getElementById('cell-notes').value };
+            const cellData = { id: Date.now(), name, price: parseFloat(document.getElementById('cell-price').value), price100: parseFloat(document.getElementById('cell-price100').value), cap: parseFloat(document.getElementById('cell-cap').value), weight: parseFloat(document.getElementById('cell-weight').value), cont: parseFloat(document.getElementById('cell-cont').value), max: parseFloat(document.getElementById('cell-max').value), notes: document.getElementById('cell-notes').value, format: document.getElementById('cell-format').value };
             const idx = cells.findIndex(c => c.name === name);
             if (idx >= 0) cells[idx] = cellData; else cells.push(cellData);
             localStorage.setItem('battCells', JSON.stringify(cells));
@@ -326,6 +343,11 @@
             document.getElementById('case-url').value = c.url || '';
         }
 
+        function newCase() {
+            document.getElementById('case-name').value = '';
+            document.getElementById('case-url').value = '';
+        }
+
         function addCase() {
             const name = document.getElementById('case-name').value || 'Box';
             const caseData = { id: Date.now(), name, l: parseFloat(document.getElementById('case-l').value), w: parseFloat(document.getElementById('case-w').value), h: parseFloat(document.getElementById('case-h').value), price: parseFloat(document.getElementById('case-price').value), url: document.getElementById('case-url').value };
@@ -346,108 +368,156 @@
             updateCalc();
         }
 
-        function syncCaseToBox() {
-            const c = cases[document.getElementById('case-select').value];
-            if (!c) return;
-            document.getElementById('box-l').value = c.l;
-            document.getElementById('box-w').value = c.w;
-            document.getElementById('box-h').value = c.h;
-            document.getElementById('manual-box').classList.toggle('hidden', c.name !== 'Manuell');
-        }
-
         function updateCalc() {
-            const cell = cells[document.getElementById('cell-select').value];
-            const packCase = cases[document.getElementById('case-select').value];
-            if (!cell) return;
+            try {
+                const cell = cells[document.getElementById('cell-select').value];
+                const packCase = cases[document.getElementById('case-select').value];
+                if (!cell) return;
 
-            const s = parseInt(document.getElementById('pack-s').value) || 0;
-            const p = parseInt(document.getElementById('pack-p').value) || 0;
-            const totalCells = s * p;
-            document.getElementById('res-total-cells').innerText = `${totalCells} Zellen`;
+                const s = parseInt(document.getElementById('pack-s').value) || 0;
+                const p = parseInt(document.getElementById('pack-p').value) || 0;
+                const totalCells = s * p;
+                document.getElementById('res-total-cells').innerText = `${totalCells} Zellen`;
 
-            const boxL = parseFloat(document.getElementById('box-l').value);
-            const boxW = parseFloat(document.getElementById('box-w').value);
-            const boxH = parseFloat(document.getElementById('box-h').value);
+                const boxL = packCase.l;
+                const boxW = packCase.w;
+                const boxH = packCase.h;
 
-            document.getElementById('res-volt').innerText = (s * 3.7).toFixed(1) + 'V';
-            document.getElementById('res-cap').innerText = (p * cell.cap / 1000).toFixed(1) + 'Ah';
-            document.getElementById('res-wh').innerText = Math.round(s * 3.7 * p * cell.cap / 1000) + 'Wh';
-            document.getElementById('res-cont').innerText = (p * cell.cont) + 'A';
-            document.getElementById('res-max').innerText = 'Peak: ' + (p * cell.max) + 'A';
-            document.getElementById('res-weight').innerText = (totalCells * cell.weight / 1000).toFixed(1) + 'kg';
-            const cost = Math.round(totalCells * (totalCells >= 100 ? cell.price100 : cell.price) + (packCase ? packCase.price : 0));
-            document.getElementById('res-cost').innerText = cost + '€';
+                // Rastermaße
+                let gridH = 19.5, gridV = 19.5, actualDia = 18.4, actualHeight = 65;
+                if (cell.format === '21700') { gridH = 22.5; gridV = 22.5; actualDia = 21.4; actualHeight = 70; }
 
-            const lRows = parseInt(document.getElementById('layout-rows').value) || totalCells;
-            const lCols = Math.ceil(totalCells / lRows);
-            const isHoney = document.getElementById('layout-type').value === 'honey';
-
-            let packL = lRows * cell.dia;
-            let packW = lCols * cell.dia;
-            if (isHoney) {
-                packL = (lRows + 0.5) * cell.dia;
-                packW = (lCols - 1) * (cell.dia * 0.866) + cell.dia;
-            }
-            const packH = cell.height;
-
-            const tooBig = packL > boxL || packW > boxW || packH > boxH;
-            document.getElementById('dim-warning').classList.toggle('hidden', !tooBig);
-
-            const svg = document.getElementById('visualizer');
-            const pad = 20;
-            const vW = Math.max(boxL, packL) + pad * 2;
-            const vH = Math.max(boxW, packW) + pad * 2;
-            svg.setAttribute('viewBox', `0 0 ${vW} ${vH}`);
-
-            let svgC = `<rect x="${pad}" y="${pad}" width="${boxL}" height="${boxW}" fill="none" stroke="#666" stroke-dasharray="5,5" /><text x="${pad}" y="${pad - 5}" font-size="12" fill="#666">${boxL}x${boxW}mm</text>`;
-            const cellClass = tooBig ? 'is-invalid' : '';
-            const cCol = tooBig ? '#fee2e2' : '#dcfce7';
-            const sCol = tooBig ? '#ef4444' : '#22c55e';
-
-            for(let i=0; i<totalCells; i++) {
-                const rIdx = i % lRows;
-                const cIdx = Math.floor(i / lRows);
-                let offsetX = 0;
-                let yMult = 1;
+                const nominalWh = s * 3.7 * p * cell.cap / 1000;
+                document.getElementById('res-volt').innerText = (s * 3.7).toFixed(1) + 'V';
+                document.getElementById('res-cap').innerText = (p * cell.cap / 1000).toFixed(1) + 'Ah';
+                document.getElementById('res-wh').innerText = Math.round(nominalWh) + 'Wh';
+                document.getElementById('res-cont').innerText = (p * cell.cont) + 'A';
+                document.getElementById('res-max').innerText = 'Peak: ' + (p * cell.max) + 'A';
                 
-                if (isHoney) {
-                    if (cIdx % 2 === 1) offsetX = cell.dia / 2;
-                    yMult = 0.866;
-                }
+                const cost = Math.round(totalCells * (totalCells >= 100 ? cell.price100 : cell.price) + (packCase ? packCase.price : 0));
+                const weight = (totalCells * cell.weight / 1000).toFixed(1);
+                const priceKwh = nominalWh > 0 ? Math.round(cost / (nominalWh / 1000)) : 0;
+                
+                document.getElementById('res-cost').innerText = cost + '€';
+                document.getElementById('res-weight-costkwh').innerText = `${weight}kg | ${priceKwh}€/kWh`;
 
-                const cx = pad + rIdx * cell.dia + cell.dia/2 + offsetX;
-                const cy = pad + cIdx * cell.dia * yMult + cell.dia/2;
-                svgC += `<circle cx="${cx}" cy="${cy}" r="${cell.dia/2 - 0.5}" fill="${cCol}" stroke="${sCol}" class="${cellClass}" />`;
+                const lRows = parseInt(document.getElementById('layout-rows').value) || totalCells;
+                const lCols = Math.ceil(totalCells / lRows);
+                const isHoney = document.getElementById('layout-type').value === 'honey';
+
+                let packL = lRows * gridH;
+                let packW = lCols * gridV;
+                if (isHoney) {
+                    if (cell.format === '21700') { gridV = 19.5; }
+                    packL = (lRows + 0.5) * gridH;
+                    packW = (lCols - 1) * gridV + actualDia;
+                }
+                const packHeight = actualHeight;
+
+                const tooBig = packL > boxL || packW > boxW || packHeight > boxH;
+                document.getElementById('dim-warning').classList.toggle('hidden', !tooBig);
+
+                const svg = document.getElementById('visualizer');
+                const pad = 20;
+                const vW = Math.max(boxL, packL) + pad * 2;
+                const vH = Math.max(boxW, packW) + pad * 2;
+                svg.setAttribute('viewBox', `0 0 ${vW} ${vH}`);
+
+                let svgC = `<rect x="${pad}" y="${pad}" width="${boxL}" height="${boxW}" fill="none" stroke="#666" stroke-dasharray="5,5" /><text x="${pad}" y="${pad - 5}" font-size="12" fill="#666">${boxL}x${boxW}mm</text>`;
+                const cellClass = tooBig ? 'is-invalid' : '';
+                const cCol = tooBig ? '#fee2e2' : '#dcfce7';
+                const sCol = tooBig ? '#ef4444' : '#22c55e';
+                for(let i=0; i<totalCells; i++) {
+                    const rIdx = i % lRows;
+                    const cIdx = Math.floor(i / lRows);
+                    let offX = 0;
+                    if (isHoney && cIdx % 2 === 1) offX = gridH / 2;
+                    const cx = pad + rIdx * gridH + gridH/2 + offX;
+                    const cy = pad + cIdx * gridV + gridV/2;
+                    svgC += `<circle cx="${cx}" cy="${cy}" r="${actualDia/2 - 0.5}" fill="${cCol}" stroke="${sCol}" class="${cellClass}" />`;
+                }
+                svgC += `<text x="${pad}" y="${pad + packW + 15}" font-size="12" font-weight="bold" fill="${tooBig ? 'red' : 'green'}">Pack: ${packL.toFixed(1)} x ${packW.toFixed(1)} x ${packHeight}mm</text>`;
+                svg.innerHTML = svgC;
+            } catch (e) {
+                console.error("Fehler in updateCalc:", e);
             }
-            svgC += `<text x="${pad}" y="${pad + packW + 15}" font-size="12" font-weight="bold" fill="${tooBig ? 'red' : 'green'}">Pack: ${packL.toFixed(1)} x ${packW.toFixed(1)} x ${packH}mm</text>`;
-            svg.innerHTML = svgC;
         }
 
         function saveComparison() {
-            const cell = cells[document.getElementById('cell-select').value];
-            const packCase = cases[document.getElementById('case-select').value];
-            const s = document.getElementById('pack-s').value;
-            const p = document.getElementById('pack-p').value;
+            const cellSelect = document.getElementById('cell-select');
+            const caseSelect = document.getElementById('case-select');
+            const cellIdx = cellSelect.value;
+            const caseIdx = caseSelect.value;
+            const cell = cells[cellIdx];
+            const packCase = cases[caseIdx];
+            
+            if (!cell) return alert("Bitte eine Zelle wählen.");
+            if (!packCase) return alert("Bitte ein Gehäuse wählen.");
+
+            const s = parseInt(document.getElementById('pack-s').value) || 0;
+            const p = parseInt(document.getElementById('pack-p').value) || 0;
             const total = s * p;
-            comparisons.push({ name: document.getElementById('pack-name').value || (cell.name + ' ' + s + 'S' + p + 'P'), config: s + 'S' + p + 'P', wh: Math.round(s * 3.7 * p * cell.cap / 1000), cost: Math.round(total * (total >= 100 ? cell.price100 : cell.price) + packCase.price), caseUrl: packCase.url, cellLink: `https://www.google.com/search?q=${encodeURIComponent(cell.name)}`, notes: document.getElementById('pack-notes').value });
+            
+            const wh = Math.round(s * 3.7 * p * cell.cap / 1000);
+            const cellPrice = total >= 100 ? cell.price100 : cell.price;
+            const cost = Math.round(total * cellPrice + packCase.price);
+
+            comparisons.push({
+                name: document.getElementById('pack-name').value || (cell.name + ' ' + s + 'S' + p + 'P'),
+                cellIdx: parseInt(cellIdx),
+                caseIdx: parseInt(caseIdx),
+                s, p,
+                lRows: document.getElementById('layout-rows').value,
+                lType: document.getElementById('layout-type').value,
+                wh: wh,
+                cost: cost,
+                notes: document.getElementById('pack-notes').value
+            });
             localStorage.setItem('battComps', JSON.stringify(comparisons));
             renderComparisons();
         }
 
+        function loadComparison(i) {
+            const c = comparisons[i];
+            if (!c) return;
+            document.getElementById('pack-name').value = c.name || '';
+            document.getElementById('cell-select').value = c.cellIdx;
+            document.getElementById('case-select').value = c.caseIdx;
+            document.getElementById('pack-s').value = c.s;
+            document.getElementById('pack-p').value = c.p;
+            document.getElementById('layout-rows').value = c.lRows;
+            document.getElementById('layout-type').value = c.lType;
+            document.getElementById('pack-notes').value = c.notes || '';
+            updateCalc();
+        }
+
         function renderComparisons() {
-            document.getElementById('comp-list').innerHTML = comparisons.map((c, i) => `
-                <tr>
-                    <td><div class="font-bold">${c.name}</div><div class="text-xs opacity-50">${c.notes || ''}</div></td>
-                    <td>${c.config}</td><td>${c.wh}Wh</td><td>${c.cost}€</td>
+            const list = document.getElementById('comp-list');
+            if (!list) return;
+            
+            list.innerHTML = comparisons.map((c, i) => {
+                const cell = cells[c.cellIdx] || { name: '?' };
+                const packCase = cases[c.caseIdx] || { name: '?', url: '' };
+                const configStr = c.s ? `${c.s}S${c.p}P` : (c.config || '-');
+                
+                return `
+                <tr onclick="loadComparison(${i})" class="clickable-row">
+                    <td>
+                        <div class="font-bold">${c.name || 'Unbenannt'}</div>
+                        <div class="text-xs opacity-50">${c.notes || ''}</div>
+                    </td>
+                    <td>${configStr}</td>
+                    <td>${c.wh || 0}Wh</td>
+                    <td>${c.cost || 0}€</td>
                     <td>
                         <div class="flex gap-1">
-                            ${c.cellLink ? `<a href="${c.cellLink}" target="_blank" class="btn btn-ghost btn-xs">Cell</a>` : ''}
-                            ${c.caseUrl ? `<a href="${c.caseUrl}" target="_blank" class="btn btn-ghost btn-xs">Case</a>` : ''}
+                            ${cell.name !== '?' ? `<a href="https://www.google.com/search?q=${encodeURIComponent(cell.name)}" target="_blank" onclick="event.stopPropagation()" class="btn btn-ghost btn-xs">Cell</a>` : ''}
+                            ${packCase.url ? `<a href="${packCase.url}" target="_blank" onclick="event.stopPropagation()" class="btn btn-ghost btn-xs">Case</a>` : ''}
                         </div>
                     </td>
-                    <td><button onclick="deleteComp(${i})" class="btn btn-ghost btn-xs text-error">✕</button></td>
-                </tr>
-            `).join('');
+                    <td><button onclick="event.stopPropagation(); deleteComp(${i})" class="btn btn-ghost btn-xs text-error">✕</button></td>
+                </tr>`;
+            }).join('');
         }
 
         function deleteComp(i) { comparisons.splice(i, 1); localStorage.setItem('battComps', JSON.stringify(comparisons)); renderComparisons(); }
