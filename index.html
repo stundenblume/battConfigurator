@@ -504,7 +504,12 @@
                 document.getElementById('res-cap').innerText = (p * cell.cap / 1000).toFixed(1) + 'Ah';
                 document.getElementById('res-wh').innerText = Math.round(nominalWh) + 'Wh';
                 
-                document.getElementById('res-util').innerText = `${loadPercent}% Last`;
+                const utilVal = document.getElementById('res-util');
+                utilVal.innerText = `${loadPercent}% Last`;
+                utilVal.className = 'stat-value text-lg';
+                if (loadPercent >= 95) utilVal.classList.add('text-error');
+                else if (loadPercent >= 80) utilVal.classList.add('text-warning');
+
                 document.getElementById('res-cont').innerText = `${reqA.toFixed(1)}A / ${packContA}A`;
                 
                 const cost = Math.round(totalCells * (totalCells >= 100 ? cell.price100 : cell.price) + packCase.price);
