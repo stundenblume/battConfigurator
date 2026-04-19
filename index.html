@@ -378,6 +378,7 @@
             document.getElementById('format-name').value = ''; 
             document.getElementById('format-gridH').value = 22.5;
             document.getElementById('format-gridV').value = 22.5;
+            document.getElementById('format-dia').value = 21.4;
             document.getElementById('format-height').value = 70;
             document.getElementById('format-honeyV').value = 19.5;
         }
@@ -512,16 +513,19 @@
                 document.getElementById('res-cost').innerText = cost + '€';
                 document.getElementById('res-weight-costkwh').innerText = `${priceKwh}€/kWh | Geh. inkl.`;
 
-                const lRows = parseInt(document.getElementById('layout-rows').value) || totalCells;
-                const lCols = Math.ceil(totalCells / lRows);
+                const numHoriz = parseInt(document.getElementById('layout-rows').value) || totalCells;
+                const numVert = Math.ceil(totalCells / numHoriz);
                 const isHoney = document.getElementById('layout-type').value === 'honey';
+                
+                // Optimized alignment: Fill dimension that matches P perfectly
+                const fillVertical = (numVert % p === 0 && numHoriz % p !== 0) || (numVert === p);
 
-                let packL = lRows * format.gridH;
-                let packW = lCols * format.gridV;
+                let packL = numHoriz * format.gridH;
+                let packW = numVert * format.gridV;
                 const visualDia = format.dia || (format.gridH - 1.1);
                 if (isHoney) {
-                    packL = (lRows + 0.5) * format.gridH;
-                    packW = (lCols - 1) * format.honeyV + visualDia;
+                    packL = (numHoriz + 0.5) * format.gridH;
+                    packW = (numVert - 1) * format.honeyV + visualDia;
                 }
 
                 const caseArea = packCase.l * packCase.w;
@@ -543,23 +547,55 @@
                 const vH = Math.max(packCase.w, packW) + pad * 2;
                 svg.setAttribute('viewBox', `0 0 ${vW} ${vH}`);
 
-                // Calculate centering offsets
                 const centerOffsetX = (packCase.l - packL) / 2;
                 const centerOffsetY = (packCase.w - packW) / 2;
 
                 let svgC = `<rect x="${pad}" y="${pad}" width="${packCase.l}" height="${packCase.w}" fill="none" stroke="#666" stroke-dasharray="5,5" /><text x="${pad}" y="${pad - 5}" font-size="12" fill="#666">${packCase.l}x${packCase.w}mm</text>`;
                 const cellClass = tooBig ? 'is-invalid' : '';
-                const cCol = tooBig ? '#fee2e2' : '#dcfce7';
-                const sCol = tooBig ? '#ef4444' : '#22c55e';
-                for(let i=0; i<totalCells; i++) {
-                    const rIdx = i % lRows;
-                    const cIdx = Math.floor(i / lRows);
+                const groupColors = ['#22c55e', '#facc15']; 
+
+                const getCoords = (idx) => {
+                    let r, c;
+                    if (fillVertical) {
+                        // Group cells in vertical columns
+                        r = Math.floor(idx / numVert); // Column index
+                        c = idx % numVert;             // Row index
+                        if (r % 2 === 1) c = (numVert - 1) - c; // Vertical Snake
+                    } else {
+                        // Group cells in horizontal rows
+                        c = Math.floor(idx / numHoriz); // Row index
+                        r = idx % numHoriz;             // Column index
+                        if (c % 2 === 1) r = (numHoriz - 1) - r; // Horizontal Snake
+                    }
+
                     let offX = 0;
-                    if (isHoney && cIdx % 2 === 1) offX = format.gridH / 2;
-                    
-                    const cx = pad + centerOffsetX + rIdx * format.gridH + format.gridH/2 + offX;
-                    const cy = pad + centerOffsetY + cIdx * (isHoney ? format.honeyV : format.gridV) + (isHoney ? visualDia/2 : format.gridV/2);
-                    svgC += `<circle cx="${cx}" cy="${cy}" r="${visualDia/2 - 0.5}" fill="${cCol}" stroke="${sCol}" class="${cellClass}" />`;
+                    if (isHoney && c % 2 === 1) offX = format.gridH / 2;
+                    const cx = pad + centerOffsetX + r * format.gridH + format.gridH/2 + offX;
+                    const cy = pad + centerOffsetY + c * (isHoney ? format.honeyV : format.gridV) + (isHoney ? visualDia/2 : format.gridV/2);
+                    return { cx, cy };
+                };
+
+                // Nickel strips
+                for(let g=0; g<s; g++) {
+                    let points = [];
+                    for(let i=g*p; i<(g+1)*p && i<totalCells; i++) {
+                        const { cx, cy } = getCoords(i);
+                        points.push(`${cx},${cy}`);
+                    }
+                    if (points.length > 1) {
+                        svgC += `<polyline points="${points.join(' ')}" fill="none" stroke="#64748b" stroke-width="${visualDia * 0.5}" stroke-linecap="round" stroke-linejoin="round" opacity="0.6" />`;
+                    }
+                }
+
+                // Cells
+                for(let i=0; i<totalCells; i++) {
+                    const { cx, cy } = getCoords(i);
+                    const sIdx = Math.floor(i / p) + 1;
+                    const groupColor = tooBig ? '#fee2e2' : groupColors[(sIdx-1) % 2];
+                    const strokeColor = tooBig ? '#ef4444' : '#475569';
+
+                    svgC += `<circle cx="${cx}" cy="${cy}" r="${visualDia/2 - 0.5}" fill="${groupColor}" stroke="${strokeColor}" stroke-width="0.8" class="${cellClass}" />`;
+                    svgC += `<text x="${cx}" y="${cy + 3}" font-size="8" font-weight="bold" text-anchor="middle" fill="#000" opacity="0.7" style="pointer-events:none">S${sIdx}</text>`;
                 }
                 svgC += `<text x="${pad}" y="${pad + packCase.w + 15}" font-size="12" font-weight="bold" fill="${tooBig ? 'red' : 'green'}">Pack: ${packL.toFixed(1)} x ${packW.toFixed(1)} x ${format.height}mm</text>`;
                 svg.innerHTML = svgC;
@@ -586,15 +622,16 @@
             const reqA = packVolt > 0 ? (power / packVolt) : 0;
             const loadPercent = packContA > 0 ? Math.round((reqA / packContA) * 100) : 0;
 
-            const lRows = parseInt(document.getElementById('layout-rows').value) || total;
-            const lCols = Math.ceil(total / lRows);
+            const numHoriz = parseInt(document.getElementById('layout-rows').value) || total;
+            const numVert = Math.ceil(total / numHoriz);
             const isHoney = document.getElementById('layout-type').value === 'honey';
-            let packL = lRows * format.gridH;
-            let packW = lCols * format.gridV;
+            
+            let packL = numHoriz * format.gridH;
+            let packW = numVert * format.gridV;
             const visualDia = format.dia || (format.gridH - 1.1);
             if (isHoney) {
-                packL = (lRows + 0.5) * format.gridH;
-                packW = (lCols - 1) * format.honeyV + visualDia;
+                packL = (numHoriz + 0.5) * format.gridH;
+                packW = (numVert - 1) * format.honeyV + visualDia;
             }
             const caseArea = packCase.l * packCase.w;
             const packArea = packL * packW;
