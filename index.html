@@ -51,6 +51,7 @@
                                     <div class="flex gap-2 text-xs">
                                         <a id="cell-link-google" href="#" target="_blank" class="link link-primary font-bold">Google ↗</a>
                                         <a id="cell-link-lygte" href="#" target="_blank" class="link link-secondary font-bold">Lygte ↗</a>
+                                        <a id="cell-link-custom" href="#" target="_blank" class="link link-accent font-bold hidden">Link ↗</a>
                                     </div>
                                 </label>
                                 <input type="text" id="cell-name" placeholder="Samsung 30Q" class="input input-bordered w-full" />
@@ -86,7 +87,7 @@
                                 </div>
                                 <div class="form-control">
                                     <label class="label"><span class="label-text text-xs font-bold">Eigener Link</span></label>
-                                    <input type="url" id="cell-custom-link" placeholder="https://..." class="input input-bordered w-full" />
+                                    <input type="url" id="cell-custom-link" placeholder="https://..." class="input input-bordered w-full" oninput="updateCellLinksFromInput()" />
                                 </div>
                             </div>
                             <div class="form-control w-full">
@@ -164,7 +165,10 @@
                             </div>
                             <div class="divider">Bearbeiten / Neu</div>
                             <div class="form-control w-full">
-                                <label class="label"><span class="label-text text-sm">Gehäuse Name</span></label>
+                                <label class="label">
+                                    <span class="label-text text-sm">Gehäuse Name</span>
+                                    <a id="case-link-url" href="#" target="_blank" class="label-text-alt link link-primary font-bold hidden">Link ↗</a>
+                                </label>
                                 <input type="text" id="case-name" placeholder="Pelicase 1200" class="input input-bordered w-full" />
                             </div>
                             <div class="grid grid-cols-3 gap-2">
@@ -187,8 +191,8 @@
                                     <input type="number" id="case-price" step="0.01" value="45.00" class="input input-bordered w-full" />
                                 </div>
                                 <div class="form-control">
-                                    <label class="label"><span class="label-text text-xs">URL</span></label>
-                                    <input type="url" id="case-url" placeholder="https://..." class="input input-bordered w-full" />
+                                    <label class="label"><span class="label-text text-xs font-bold">URL</span></label>
+                                    <input type="url" id="case-url" placeholder="https://..." class="input input-bordered w-full" oninput="updateCaseLinksFromInput()" />
                                 </div>
                             </div>
                             <div class="flex gap-2 mt-4">
@@ -418,9 +422,9 @@
             document.getElementById('cell-format').value = cell.formatId;
             document.getElementById('cell-custom-link').value = cell.customLink || '';
             document.getElementById('cell-notes').value = cell.notes || '';
-            updateCellLinks(cell.name);
+            updateCellLinks(cell.name, cell.customLink);
         }
-        function newCell() { document.getElementById('cell-name').value = ''; document.getElementById('cell-notes').value = ''; document.getElementById('cell-custom-link').value = ''; }
+        function newCell() { document.getElementById('cell-name').value = ''; document.getElementById('cell-notes').value = ''; document.getElementById('cell-custom-link').value = ''; updateCellLinks('', ''); }
         function addCell() {
             const cellData = { id: Date.now(), name: document.getElementById('cell-name').value || 'Unbekannt', price: parseFloat(document.getElementById('cell-price').value), price100: parseFloat(document.getElementById('cell-price100').value), cap: parseFloat(document.getElementById('cell-cap').value), cont: parseFloat(document.getElementById('cell-cont').value), max: parseFloat(document.getElementById('cell-max').value), notes: document.getElementById('cell-notes').value, formatId: parseInt(document.getElementById('cell-format').value), customLink: document.getElementById('cell-custom-link').value };
             const idx = cells.findIndex(c => c.name === cellData.name);
@@ -435,9 +439,14 @@
             localStorage.setItem('battCells', JSON.stringify(cells));
             renderCellSelects(); loadCellToEditor(); updateCalc();
         }
-        function updateCellLinks(name) {
-            document.getElementById('cell-link-google').href = `https://www.google.com/search?q=${encodeURIComponent(name)}`;
-            document.getElementById('cell-link-lygte').href = `https://www.google.com/search?q=site:lygte-info.dk+${encodeURIComponent(name)}`;
+        function updateCellLinks(name, custom) {
+            document.getElementById('cell-link-google').href = name ? `https://www.google.com/search?q=${encodeURIComponent(name)}` : '#';
+            document.getElementById('cell-link-lygte').href = name ? `https://www.google.com/search?q=site:lygte-info.dk+${encodeURIComponent(name)}` : '#';
+            const cLink = document.getElementById('cell-link-custom');
+            if (custom) { cLink.href = custom; cLink.classList.remove('hidden'); } else { cLink.classList.add('hidden'); }
+        }
+        function updateCellLinksFromInput() {
+            updateCellLinks(document.getElementById('cell-name').value, document.getElementById('cell-custom-link').value);
         }
 
         // --- Case Logic ---
@@ -450,8 +459,9 @@
             document.getElementById('case-h').value = c.h;
             document.getElementById('case-price').value = c.price;
             document.getElementById('case-url').value = c.url || '';
+            updateCaseLinks(c.url);
         }
-        function newCase() { document.getElementById('case-name').value = ''; document.getElementById('case-url').value = ''; }
+        function newCase() { document.getElementById('case-name').value = ''; document.getElementById('case-url').value = ''; updateCaseLinks(''); }
         function addCase() {
             const caseData = { id: Date.now(), name: document.getElementById('case-name').value || 'Box', l: parseFloat(document.getElementById('case-l').value), w: parseFloat(document.getElementById('case-w').value), h: parseFloat(document.getElementById('case-h').value), price: parseFloat(document.getElementById('case-price').value), url: document.getElementById('case-url').value };
             const idx = cases.findIndex(c => c.name === caseData.name);
@@ -461,10 +471,17 @@
         }
         function deleteCase() {
             const idx = document.getElementById('editor-case-select').value;
-            if (cells.length <= 1 || !confirm("Löschen?")) return;
+            if (cases.length <= 1 || !confirm("Löschen?")) return;
             cases.splice(idx, 1);
             localStorage.setItem('battCases', JSON.stringify(cases));
             renderCaseSelects(); loadCaseToEditor(); updateCalc();
+        }
+        function updateCaseLinks(url) {
+            const link = document.getElementById('case-link-url');
+            if (url) { link.href = url; link.classList.remove('hidden'); } else { link.classList.add('hidden'); }
+        }
+        function updateCaseLinksFromInput() {
+            updateCaseLinks(document.getElementById('case-url').value);
         }
 
         // --- Calculator ---
@@ -529,7 +546,7 @@
                 const vH = Math.max(packCase.w, packW) + pad * 2;
                 svg.setAttribute('viewBox', `0 0 ${vW} ${vH}`);
 
-                let svgC = `<rect x="${pad}" y="${pad}" width="${packCase.l}" height="${packCase.w}" fill="none" stroke="#666" stroke-dasharray="5,5" /><text x="${pad}" y="${pad - 5}" font-size="12" fill="#666">${packCase.l}x${packCase.w}mm</text>`;
+                let svgC = `<rect x="${pad}" y="${pad}" width="${boxL=packCase.l}" height="${boxW=packCase.w}" fill="none" stroke="#666" stroke-dasharray="5,5" /><text x="${pad}" y="${pad - 5}" font-size="12" fill="#666">${boxL}x${boxW}mm</text>`;
                 const cellClass = tooBig ? 'is-invalid' : '';
                 const cCol = tooBig ? '#fee2e2' : '#dcfce7';
                 const sCol = tooBig ? '#ef4444' : '#22c55e';
