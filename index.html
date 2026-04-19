@@ -14,6 +14,7 @@
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
         .clickable-row { cursor: pointer; transition: background 0.2s; }
         .clickable-row:hover { background-color: oklch(var(--b2)) !important; }
+        .collapse-title { cursor: pointer; }
     </style>
 </head>
 <body class="bg-base-200 min-h-screen p-4 md:p-8">
@@ -32,154 +33,169 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="space-y-6">
                 <!-- Cell Editor -->
-                <div class="card bg-base-100 shadow-xl">
-                    <div class="card-body">
-                        <h2 class="card-title">Zellen-Datenbank</h2>
-                        <div class="form-control w-full">
-                            <label class="label"><span class="label-text">Zelle wählen</span></label>
-                            <select id="editor-cell-select" class="select select-bordered w-full" onchange="loadCellToEditor()"></select>
+                <div class="card bg-base-100 shadow-xl overflow-visible">
+                    <div class="collapse collapse-arrow">
+                        <input type="checkbox" checked /> 
+                        <div class="collapse-title flex items-center">
+                            <h2 class="card-title">Zellen-Datenbank</h2>
                         </div>
-                        <div class="divider">Bearbeiten / Neu</div>
-                        <div class="form-control w-full">
-                            <label class="label">
-                                <span class="label-text">Zellen Name</span>
-                                <div class="flex gap-2 text-xs">
-                                    <a id="cell-link-google" href="#" target="_blank" class="link link-primary font-bold">Google ↗</a>
-                                    <a id="cell-link-lygte" href="#" target="_blank" class="link link-secondary font-bold">Lygte ↗</a>
+                        <div class="collapse-content">
+                            <div class="form-control w-full">
+                                <label class="label"><span class="label-text">Zelle wählen</span></label>
+                                <select id="editor-cell-select" class="select select-bordered w-full" onchange="loadCellToEditor()"></select>
+                            </div>
+                            <div class="divider">Bearbeiten / Neu</div>
+                            <div class="form-control w-full">
+                                <label class="label">
+                                    <span class="label-text">Zellen Name</span>
+                                    <div class="flex gap-2 text-xs">
+                                        <a id="cell-link-google" href="#" target="_blank" class="link link-primary font-bold">Google ↗</a>
+                                        <a id="cell-link-lygte" href="#" target="_blank" class="link link-secondary font-bold">Lygte ↗</a>
+                                    </div>
+                                </label>
+                                <input type="text" id="cell-name" placeholder="Samsung 30Q" class="input input-bordered w-full" />
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div class="form-control">
+                                    <label class="label"><span class="label-text text-xs">Preis (€/Stk)</span></label>
+                                    <input type="number" id="cell-price" step="0.01" value="5.00" class="input input-bordered w-full" />
                                 </div>
-                            </label>
-                            <input type="text" id="cell-name" placeholder="Samsung 30Q" class="input input-bordered w-full" />
-                        </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <div class="form-control">
-                                <label class="label"><span class="label-text text-xs">Preis (€/Stk)</span></label>
-                                <input type="number" id="cell-price" step="0.01" value="5.00" class="input input-bordered w-full" />
+                                <div class="form-control">
+                                    <label class="label"><span class="label-text text-xs">Preis/Stk @ 100 (€)</span></label>
+                                    <input type="number" id="cell-price100" step="0.01" value="4.50" class="input input-bordered w-full" />
+                                </div>
                             </div>
                             <div class="form-control">
-                                <label class="label"><span class="label-text text-xs">Preis/Stk @ 100 (€)</span></label>
-                                <input type="number" id="cell-price100" step="0.01" value="4.50" class="input input-bordered w-full" />
+                                <label class="label"><span class="label-text text-xs font-bold">Kapazität (mAh)</span></label>
+                                <input type="number" id="cell-cap" value="3000" class="input input-bordered w-full" />
                             </div>
-                        </div>
-                        <div class="form-control">
-                            <label class="label"><span class="label-text text-xs font-bold">Kapazität (mAh)</span></label>
-                            <input type="number" id="cell-cap" value="3000" class="input input-bordered w-full" />
-                        </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <div class="form-control">
-                                <label class="label"><span class="label-text text-xs">Dauerstrom (A)</span></label>
-                                <input type="number" id="cell-cont" value="15" class="input input-bordered w-full" />
+                            <div class="grid grid-cols-2 gap-2">
+                                <div class="form-control">
+                                    <label class="label"><span class="label-text text-xs">Dauerstrom (A)</span></label>
+                                    <input type="number" id="cell-cont" value="15" class="input input-bordered w-full" />
+                                </div>
+                                <div class="form-control">
+                                    <label class="label"><span class="label-text text-xs">Max Strom (A)</span></label>
+                                    <input type="number" id="cell-max" value="30" class="input input-bordered w-full" />
+                                </div>
                             </div>
-                            <div class="form-control">
-                                <label class="label"><span class="label-text text-xs">Max Strom (A)</span></label>
-                                <input type="number" id="cell-max" value="30" class="input input-bordered w-full" />
+                            <div class="grid grid-cols-2 gap-2">
+                                <div class="form-control">
+                                    <label class="label"><span class="label-text text-xs font-bold">Format</span></label>
+                                    <select id="cell-format" class="select select-bordered w-full"></select>
+                                </div>
+                                <div class="form-control">
+                                    <label class="label"><span class="label-text text-xs font-bold">Eigener Link</span></label>
+                                    <input type="url" id="cell-custom-link" placeholder="https://..." class="input input-bordered w-full" />
+                                </div>
                             </div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <div class="form-control">
-                                <label class="label"><span class="label-text text-xs font-bold">Format</span></label>
-                                <select id="cell-format" class="select select-bordered w-full"></select>
+                            <div class="form-control w-full">
+                                <label class="label"><span class="label-text">Notizen</span></label>
+                                <textarea id="cell-notes" class="textarea textarea-bordered h-20" placeholder="z.B. Bezugsquelle..."></textarea>
                             </div>
-                            <div class="form-control">
-                                <label class="label"><span class="label-text text-xs font-bold">Eigener Link</span></label>
-                                <input type="url" id="cell-custom-link" placeholder="https://..." class="input input-bordered w-full" />
+                            <div class="flex gap-2 mt-4">
+                                <button onclick="newCell()" class="btn btn-outline btn-sm flex-1">Neu</button>
+                                <button onclick="addCell()" class="btn btn-primary btn-sm flex-1">Speichern</button>
+                                <button onclick="deleteCell()" class="btn btn-error btn-outline btn-sm flex-1">Löschen</button>
                             </div>
-                        </div>
-                        <div class="form-control w-full">
-                            <label class="label"><span class="label-text">Notizen</span></label>
-                            <textarea id="cell-notes" class="textarea textarea-bordered h-20" placeholder="z.B. Bezugsquelle..."></textarea>
-                        </div>
-                        <div class="flex gap-2 mt-4">
-                            <button onclick="newCell()" class="btn btn-outline btn-sm flex-1">Neu</button>
-                            <button onclick="addCell()" class="btn btn-primary btn-sm flex-1">Speichern</button>
-                            <button onclick="deleteCell()" class="btn btn-error btn-outline btn-sm flex-1">Löschen</button>
                         </div>
                     </div>
                 </div>
 
                 <!-- Format Editor -->
-                <div class="card bg-base-100 shadow-xl">
-                    <div class="card-body">
-                        <h2 class="card-title text-sm">Formate (Rastermaße)</h2>
-                        <div class="form-control w-full">
-                            <select id="editor-format-select" class="select select-bordered select-sm w-full" onchange="loadFormatToEditor()"></select>
+                <div class="card bg-base-100 shadow-xl overflow-visible">
+                    <div class="collapse collapse-arrow">
+                        <input type="checkbox" /> 
+                        <div class="collapse-title flex items-center">
+                            <h2 class="card-title text-sm">Formate (Rastermaße)</h2>
                         </div>
-                        <div class="divider text-xs">Neu / Edit</div>
-                        <div class="form-control">
-                            <label class="label"><span class="label-text text-xs">Name (z.B. 21700)</span></label>
-                            <input type="text" id="format-name" class="input input-bordered input-sm w-full" />
-                        </div>
-                        <div class="grid grid-cols-3 gap-2">
-                            <div class="form-control">
-                                <label class="label"><span class="label-text text-xs">Raster H</span></label>
-                                <input type="number" id="format-gridH" step="0.1" class="input input-bordered input-sm w-full" />
+                        <div class="collapse-content">
+                            <div class="form-control w-full">
+                                <select id="editor-format-select" class="select select-bordered select-sm w-full" onchange="loadFormatToEditor()"></select>
                             </div>
+                            <div class="divider text-xs">Neu / Edit</div>
                             <div class="form-control">
-                                <label class="label"><span class="label-text text-xs">Raster V</span></label>
-                                <input type="number" id="format-gridV" step="0.1" class="input input-bordered input-sm w-full" />
+                                <label class="label"><span class="label-text text-xs">Name (z.B. 21700)</span></label>
+                                <input type="text" id="format-name" class="input input-bordered input-sm w-full" />
                             </div>
-                            <div class="form-control">
-                                <label class="label"><span class="label-text text-xs">Zell-Ø</span></label>
-                                <input type="number" id="format-dia" step="0.1" class="input input-bordered input-sm w-full" />
+                            <div class="grid grid-cols-3 gap-2">
+                                <div class="form-control">
+                                    <label class="label"><span class="label-text text-xs">Raster H</span></label>
+                                    <input type="number" id="format-gridH" step="0.1" class="input input-bordered input-sm w-full" />
+                                </div>
+                                <div class="form-control">
+                                    <label class="label"><span class="label-text text-xs">Raster V</span></label>
+                                    <input type="number" id="format-gridV" step="0.1" class="input input-bordered input-sm w-full" />
+                                </div>
+                                <div class="form-control">
+                                    <label class="label"><span class="label-text text-xs">Zell-Ø</span></label>
+                                    <input type="number" id="format-dia" step="0.1" class="input input-bordered input-sm w-full" />
+                                </div>
                             </div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2 mt-2">
-                            <div class="form-control">
-                                <label class="label"><span class="label-text text-xs">Zell-Höhe</span></label>
-                                <input type="number" id="format-height" step="0.1" class="input input-bordered input-sm w-full" />
+                            <div class="grid grid-cols-2 gap-2 mt-2">
+                                <div class="form-control">
+                                    <label class="label"><span class="label-text text-xs">Zell-Höhe</span></label>
+                                    <input type="number" id="format-height" step="0.1" class="input input-bordered input-sm w-full" />
+                                </div>
+                                <div class="form-control">
+                                    <label class="label"><span class="label-text text-xs text-secondary font-bold">Honey Vert</span></label>
+                                    <input type="number" id="format-honeyV" step="0.1" class="input input-bordered input-sm w-full" />
+                                </div>
                             </div>
-                            <div class="form-control">
-                                <label class="label"><span class="label-text text-xs text-secondary font-bold">Honey Vert</span></label>
-                                <input type="number" id="format-honeyV" step="0.1" class="input input-bordered input-sm w-full" />
+                            <div class="flex gap-2 mt-4">
+                                <button onclick="newFormat()" class="btn btn-outline btn-xs flex-1">Neu</button>
+                                <button onclick="addFormat()" class="btn btn-primary btn-xs flex-1">Speichern</button>
+                                <button onclick="deleteFormat()" class="btn btn-error btn-outline btn-xs flex-1">Löschen</button>
                             </div>
-                        </div>
-                        <div class="flex gap-2 mt-4">
-                            <button onclick="newFormat()" class="btn btn-outline btn-xs flex-1">Neu</button>
-                            <button onclick="addFormat()" class="btn btn-primary btn-xs flex-1">Speichern</button>
-                            <button onclick="deleteFormat()" class="btn btn-error btn-outline btn-xs flex-1">Löschen</button>
                         </div>
                     </div>
                 </div>
 
                 <!-- Case Editor -->
-                <div class="card bg-base-100 shadow-xl">
-                    <div class="card-body">
-                        <h2 class="card-title">Gehäuse-Datenbank</h2>
-                        <div class="form-control w-full">
-                            <select id="editor-case-select" class="select select-bordered w-full" onchange="loadCaseToEditor()"></select>
+                <div class="card bg-base-100 shadow-xl overflow-visible">
+                    <div class="collapse collapse-arrow">
+                        <input type="checkbox" /> 
+                        <div class="collapse-title flex items-center">
+                            <h2 class="card-title">Gehäuse-Datenbank</h2>
                         </div>
-                        <div class="divider">Bearbeiten / Neu</div>
-                        <div class="form-control w-full">
-                            <label class="label"><span class="label-text">Gehäuse Name</span></label>
-                            <input type="text" id="case-name" placeholder="Pelicase 1200" class="input input-bordered w-full" />
-                        </div>
-                        <div class="grid grid-cols-3 gap-2">
-                            <div class="form-control">
-                                <label class="label"><span class="label-text text-xs">L (innen)</span></label>
-                                <input type="number" id="case-l" value="250" class="input input-bordered w-full" />
+                        <div class="collapse-content">
+                            <div class="form-control w-full">
+                                <select id="editor-case-select" class="select select-bordered w-full" onchange="loadCaseToEditor()"></select>
                             </div>
-                            <div class="form-control">
-                                <label class="label"><span class="label-text text-xs">B (innen)</span></label>
-                                <input type="number" id="case-w" value="200" class="input input-bordered w-full" />
+                            <div class="divider">Bearbeiten / Neu</div>
+                            <div class="form-control w-full">
+                                <label class="label"><span class="label-text">Gehäuse Name</span></label>
+                                <input type="text" id="case-name" placeholder="Pelicase 1200" class="input input-bordered w-full" />
                             </div>
-                            <div class="form-control">
-                                <label class="label"><span class="label-text text-xs">H (innen)</span></label>
-                                <input type="number" id="case-h" value="70" class="input input-bordered w-full" />
+                            <div class="grid grid-cols-3 gap-2">
+                                <div class="form-control">
+                                    <label class="label"><span class="label-text text-xs">L (innen)</span></label>
+                                    <input type="number" id="case-l" value="250" class="input input-bordered w-full" />
+                                </div>
+                                <div class="form-control">
+                                    <label class="label"><span class="label-text text-xs">B (innen)</span></label>
+                                    <input type="number" id="case-w" value="200" class="input input-bordered w-full" />
+                                </div>
+                                <div class="form-control">
+                                    <label class="label"><span class="label-text text-xs">H (innen)</span></label>
+                                    <input type="number" id="case-h" value="70" class="input input-bordered w-full" />
+                                </div>
                             </div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2 mt-2">
-                            <div class="form-control">
-                                <label class="label"><span class="label-text text-xs">Preis (€)</span></label>
-                                <input type="number" id="case-price" step="0.01" value="45.00" class="input input-bordered w-full" />
+                            <div class="grid grid-cols-2 gap-2 mt-2">
+                                <div class="form-control">
+                                    <label class="label"><span class="label-text text-xs">Preis (€)</span></label>
+                                    <input type="number" id="case-price" step="0.01" value="45.00" class="input input-bordered w-full" />
+                                </div>
+                                <div class="form-control">
+                                    <label class="label"><span class="label-text text-xs">URL</span></label>
+                                    <input type="url" id="case-url" placeholder="https://..." class="input input-bordered w-full" />
+                                </div>
                             </div>
-                            <div class="form-control">
-                                <label class="label"><span class="label-text text-xs">URL</span></label>
-                                <input type="url" id="case-url" placeholder="https://..." class="input input-bordered w-full" />
+                            <div class="flex gap-2 mt-4">
+                                <button onclick="newCase()" class="btn btn-outline btn-sm flex-1">Neu</button>
+                                <button onclick="addCase()" class="btn btn-primary btn-sm flex-1">Speichern</button>
+                                <button onclick="deleteCase()" class="btn btn-error btn-outline btn-sm flex-1">Löschen</button>
                             </div>
-                        </div>
-                        <div class="flex gap-2 mt-4">
-                            <button onclick="newCase()" class="btn btn-outline btn-sm flex-1">Neu</button>
-                            <button onclick="addCase()" class="btn btn-primary btn-sm flex-1">Speichern</button>
-                            <button onclick="deleteCase()" class="btn btn-error btn-outline btn-sm flex-1">Löschen</button>
                         </div>
                     </div>
                 </div>
@@ -439,7 +455,7 @@
         }
         function deleteCase() {
             const idx = document.getElementById('editor-case-select').value;
-            if (cases.length <= 1 || !confirm("Löschen?")) return;
+            if (cells.length <= 1 || !confirm("Löschen?")) return;
             cases.splice(idx, 1);
             localStorage.setItem('battCases', JSON.stringify(cases));
             renderCaseSelects(); loadCaseToEditor(); updateCalc();
@@ -518,11 +534,15 @@
         function saveComparison() {
             const cellSelect = document.getElementById('cell-select');
             const caseSelect = document.getElementById('case-select');
-            const cell = cells[cellSelect.value];
-            const packCase = cases[caseSelect.value];
+            const cellIdx = cellSelect.value;
+            const caseIdx = caseSelect.value;
+            const cell = cells[cellIdx];
+            const packCase = cases[caseIdx];
             const power = parseFloat(document.getElementById('pack-power').value) || 0;
-            if (!cell || !packCase) return alert("Wähle Zelle & Gehäuse.");
             
+            if (!cell) return alert("Bitte eine Zelle wählen.");
+            if (!packCase) return alert("Bitte ein Gehäuse wählen.");
+
             const s = parseInt(document.getElementById('pack-s').value) || 0;
             const p = parseInt(document.getElementById('pack-p').value) || 0;
             const packVolt = s * 3.7;
@@ -532,8 +552,8 @@
 
             comparisons.push({ 
                 name: document.getElementById('pack-name').value || `${cell.name} ${s}S${p}P`, 
-                cellIdx: cellSelect.value, 
-                caseIdx: caseSelect.value, 
+                cellIdx: parseInt(cellIdx), 
+                caseIdx: parseInt(caseIdx), 
                 s, p, 
                 power,
                 loadPercent,
@@ -563,7 +583,9 @@
         }
 
         function renderComparisons() {
-            document.getElementById('comp-list').innerHTML = comparisons.map((c, i) => {
+            const list = document.getElementById('comp-list');
+            if (!list) return;
+            list.innerHTML = comparisons.map((c, i) => {
                 const cell = cells[c.cellIdx] || { name: '?' };
                 const packCase = cases[c.caseIdx] || { url: '' };
                 return `
