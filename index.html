@@ -378,7 +378,6 @@
             document.getElementById('format-name').value = ''; 
             document.getElementById('format-gridH').value = 22.5;
             document.getElementById('format-gridV').value = 22.5;
-            document.getElementById('format-dia').value = 21.4;
             document.getElementById('format-height').value = 70;
             document.getElementById('format-honeyV').value = 19.5;
         }
@@ -517,15 +516,19 @@
                 const numVert = Math.ceil(totalCells / numHoriz);
                 const isHoney = document.getElementById('layout-type').value === 'honey';
                 
-                // Optimized alignment: Fill dimension that matches P perfectly
                 const fillVertical = (numVert % p === 0 && numHoriz % p !== 0) || (numVert === p);
 
-                let packL = numHoriz * format.gridH;
-                let packW = numVert * format.gridV;
+                let packL, packW;
                 const visualDia = format.dia || (format.gridH - 1.1);
-                if (isHoney) {
-                    packL = (numHoriz + 0.5) * format.gridH;
-                    packW = (numVert - 1) * format.honeyV + visualDia;
+
+                if (fillVertical) {
+                    // Rotated Honeycomb: Stagger columns vertically
+                    packL = (numHoriz - 1) * (isHoney ? format.honeyV : format.gridH) + visualDia;
+                    packW = numVert * format.gridV + (isHoney ? format.gridV/2 : 0);
+                } else {
+                    // Standard Honeycomb: Stagger rows horizontally
+                    packL = numHoriz * format.gridH + (isHoney ? format.gridH/2 : 0);
+                    packW = (numVert - 1) * (isHoney ? format.honeyV : format.gridV) + visualDia;
                 }
 
                 const caseArea = packCase.l * packCase.w;
@@ -555,24 +558,24 @@
                 const groupColors = ['#22c55e', '#facc15']; 
 
                 const getCoords = (idx) => {
-                    let r, c;
+                    let r, c, offX = 0, offY = 0;
                     if (fillVertical) {
-                        // Group cells in vertical columns
-                        r = Math.floor(idx / numVert); // Column index
-                        c = idx % numVert;             // Row index
-                        if (r % 2 === 1) c = (numVert - 1) - c; // Vertical Snake
+                        r = Math.floor(idx / numVert); 
+                        c = idx % numVert;             
+                        if (r % 2 === 1) c = (numVert - 1) - c; 
+                        if (isHoney && r % 2 === 1) offY = format.gridV / 2;
+                        const cx = pad + centerOffsetX + r * format.honeyV + visualDia/2;
+                        const cy = pad + centerOffsetY + c * format.gridV + format.gridV/2 + offY;
+                        return { cx, cy };
                     } else {
-                        // Group cells in horizontal rows
-                        c = Math.floor(idx / numHoriz); // Row index
-                        r = idx % numHoriz;             // Column index
-                        if (c % 2 === 1) r = (numHoriz - 1) - r; // Horizontal Snake
+                        c = Math.floor(idx / numHoriz); 
+                        r = idx % numHoriz;             
+                        if (c % 2 === 1) r = (numHoriz - 1) - r; 
+                        if (isHoney && c % 2 === 1) offX = format.gridH / 2;
+                        const cx = pad + centerOffsetX + r * format.gridH + format.gridH/2 + offX;
+                        const cy = pad + centerOffsetY + c * format.honeyV + visualDia/2;
+                        return { cx, cy };
                     }
-
-                    let offX = 0;
-                    if (isHoney && c % 2 === 1) offX = format.gridH / 2;
-                    const cx = pad + centerOffsetX + r * format.gridH + format.gridH/2 + offX;
-                    const cy = pad + centerOffsetY + c * (isHoney ? format.honeyV : format.gridV) + (isHoney ? visualDia/2 : format.gridV/2);
-                    return { cx, cy };
                 };
 
                 // Nickel strips
@@ -626,13 +629,18 @@
             const numVert = Math.ceil(total / numHoriz);
             const isHoney = document.getElementById('layout-type').value === 'honey';
             
-            let packL = numHoriz * format.gridH;
-            let packW = numVert * format.gridV;
+            const fillVertical = (numVert % p === 0 && numHoriz % p !== 0) || (numVert === p);
+            let packL, packW;
             const visualDia = format.dia || (format.gridH - 1.1);
-            if (isHoney) {
-                packL = (numHoriz + 0.5) * format.gridH;
-                packW = (numVert - 1) * format.honeyV + visualDia;
+
+            if (fillVertical) {
+                packL = (numHoriz - 1) * (isHoney ? format.honeyV : format.gridH) + visualDia;
+                packW = numVert * format.gridV + (isHoney ? format.gridV/2 : 0);
+            } else {
+                packL = numHoriz * format.gridH + (isHoney ? format.gridH/2 : 0);
+                packW = (numVert - 1) * (isHoney ? format.honeyV : format.gridV) + visualDia;
             }
+            
             const caseArea = packCase.l * packCase.w;
             const packArea = packL * packW;
             const areaUtil = caseArea > 0 ? Math.round((packArea / caseArea) * 100) : 0;
