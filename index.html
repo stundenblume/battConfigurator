@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LiIon Battery Configurator</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='20' y='30' width='60' height='50' rx='5' fill='%2310b981'/><rect x='40' y='20' width='20' height='10' rx='2' fill='%23059669'/><path d='M40 55h20M50 45v20' stroke='white' stroke-width='8' stroke-linecap='round'/></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.7.2/dist/full.min.css" rel="stylesheet" type="text/css" />
     <style>
@@ -43,55 +44,98 @@
                             <label class="label">
                                 <span class="label-text">Zellen Name</span>
                                 <div class="flex gap-2 text-xs">
-                                    <a id="cell-link-google" href="#" target="_blank" class="link link-primary">Google ↗</a>
-                                    <a id="cell-link-lygte" href="#" target="_blank" class="link link-secondary">Lygte ↗</a>
+                                    <a id="cell-link-google" href="#" target="_blank" class="link link-primary font-bold">Google ↗</a>
+                                    <a id="cell-link-lygte" href="#" target="_blank" class="link link-secondary font-bold">Lygte ↗</a>
                                 </div>
                             </label>
                             <input type="text" id="cell-name" placeholder="Samsung 30Q" class="input input-bordered w-full" />
                         </div>
                         <div class="grid grid-cols-2 gap-2">
                             <div class="form-control">
-                                <label class="label"><span class="label-text">Preis (€/Stk)</span></label>
+                                <label class="label"><span class="label-text text-xs">Preis (€/Stk)</span></label>
                                 <input type="number" id="cell-price" step="0.01" value="5.00" class="input input-bordered w-full" />
                             </div>
                             <div class="form-control">
-                                <label class="label"><span class="label-text">Preis/Stk @ 100 (€)</span></label>
+                                <label class="label"><span class="label-text text-xs">Preis/Stk @ 100 (€)</span></label>
                                 <input type="number" id="cell-price100" step="0.01" value="4.50" class="input input-bordered w-full" />
+                            </div>
+                        </div>
+                        <div class="form-control">
+                            <label class="label"><span class="label-text text-xs font-bold">Kapazität (mAh)</span></label>
+                            <input type="number" id="cell-cap" value="3000" class="input input-bordered w-full" />
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="form-control">
+                                <label class="label"><span class="label-text text-xs">Dauerstrom (A)</span></label>
+                                <input type="number" id="cell-cont" value="15" class="input input-bordered w-full" />
+                            </div>
+                            <div class="form-control">
+                                <label class="label"><span class="label-text text-xs">Max Strom (A)</span></label>
+                                <input type="number" id="cell-max" value="30" class="input input-bordered w-full" />
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-2">
                             <div class="form-control">
-                                <label class="label"><span class="label-text">Kapazität (mAh)</span></label>
-                                <input type="number" id="cell-cap" value="3000" class="input input-bordered w-full" />
+                                <label class="label"><span class="label-text text-xs font-bold">Format</span></label>
+                                <select id="cell-format" class="select select-bordered w-full"></select>
                             </div>
                             <div class="form-control">
-                                <label class="label"><span class="label-text">Dauerstrom (A)</span></label>
-                                <input type="number" id="cell-cont" value="15" class="input input-bordered w-full" />
+                                <label class="label"><span class="label-text text-xs font-bold">Eigener Link</span></label>
+                                <input type="url" id="cell-custom-link" placeholder="https://..." class="input input-bordered w-full" />
                             </div>
-                        </div>
-                        <div class="form-control">
-                            <label class="label"><span class="label-text">Max Strom (A)</span></label>
-                            <input type="number" id="cell-max" value="30" class="input input-bordered w-full" />
-                        </div>
-                        <div class="form-control w-full">
-                            <label class="label"><span class="label-text font-bold">Format (Rastermaß)</span></label>
-                            <select id="cell-format" class="select select-bordered w-full">
-                                <option value="18650">18650 (Standard Halter)</option>
-                                <option value="21700">21700 (22.5mm Raster)</option>
-                            </select>
-                        </div>
-                        <div class="form-control w-full">
-                            <label class="label"><span class="label-text font-bold">Eigener Link</span></label>
-                            <input type="url" id="cell-custom-link" placeholder="https://nkon.nl/..." class="input input-bordered w-full" />
                         </div>
                         <div class="form-control w-full">
                             <label class="label"><span class="label-text">Notizen</span></label>
                             <textarea id="cell-notes" class="textarea textarea-bordered h-20" placeholder="z.B. Bezugsquelle..."></textarea>
                         </div>
                         <div class="flex gap-2 mt-4">
-                            <button onclick="newCell()" class="btn btn-outline btn-sm">Neu</button>
-                            <button onclick="addCell()" class="btn btn-primary flex-1 btn-sm">Speichern</button>
-                            <button id="btn-delete-cell" onclick="deleteCell()" class="btn btn-error btn-outline btn-sm">Löschen</button>
+                            <button onclick="newCell()" class="btn btn-outline btn-sm flex-1">Neu</button>
+                            <button onclick="addCell()" class="btn btn-primary btn-sm flex-1">Speichern</button>
+                            <button onclick="deleteCell()" class="btn btn-error btn-outline btn-sm flex-1">Löschen</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Format Editor -->
+                <div class="card bg-base-100 shadow-xl">
+                    <div class="card-body">
+                        <h2 class="card-title text-sm">Formate (Rastermaße)</h2>
+                        <div class="form-control w-full">
+                            <select id="editor-format-select" class="select select-bordered select-sm w-full" onchange="loadFormatToEditor()"></select>
+                        </div>
+                        <div class="divider text-xs">Neu / Edit</div>
+                        <div class="form-control">
+                            <label class="label"><span class="label-text text-xs">Name (z.B. 21700)</span></label>
+                            <input type="text" id="format-name" class="input input-bordered input-sm w-full" />
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div class="form-control">
+                                <label class="label"><span class="label-text text-xs">Raster H</span></label>
+                                <input type="number" id="format-gridH" step="0.1" class="input input-bordered input-sm w-full" />
+                            </div>
+                            <div class="form-control">
+                                <label class="label"><span class="label-text text-xs">Raster V</span></label>
+                                <input type="number" id="format-gridV" step="0.1" class="input input-bordered input-sm w-full" />
+                            </div>
+                            <div class="form-control">
+                                <label class="label"><span class="label-text text-xs">Zell-Ø</span></label>
+                                <input type="number" id="format-dia" step="0.1" class="input input-bordered input-sm w-full" />
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 mt-2">
+                            <div class="form-control">
+                                <label class="label"><span class="label-text text-xs">Zell-Höhe</span></label>
+                                <input type="number" id="format-height" step="0.1" class="input input-bordered input-sm w-full" />
+                            </div>
+                            <div class="form-control">
+                                <label class="label"><span class="label-text text-xs text-secondary font-bold">Honey Vert</span></label>
+                                <input type="number" id="format-honeyV" step="0.1" class="input input-bordered input-sm w-full" />
+                            </div>
+                        </div>
+                        <div class="flex gap-2 mt-4">
+                            <button onclick="newFormat()" class="btn btn-outline btn-xs flex-1">Neu</button>
+                            <button onclick="addFormat()" class="btn btn-primary btn-xs flex-1">Speichern</button>
+                            <button onclick="deleteFormat()" class="btn btn-error btn-outline btn-xs flex-1">Löschen</button>
                         </div>
                     </div>
                 </div>
@@ -110,30 +154,32 @@
                         </div>
                         <div class="grid grid-cols-3 gap-2">
                             <div class="form-control">
-                                <label class="label"><span class="label-text">L (innen)</span></label>
+                                <label class="label"><span class="label-text text-xs">L (innen)</span></label>
                                 <input type="number" id="case-l" value="250" class="input input-bordered w-full" />
                             </div>
                             <div class="form-control">
-                                <label class="label"><span class="label-text">B (innen)</span></label>
+                                <label class="label"><span class="label-text text-xs">B (innen)</span></label>
                                 <input type="number" id="case-w" value="200" class="input input-bordered w-full" />
                             </div>
                             <div class="form-control">
-                                <label class="label"><span class="label-text">H (innen)</span></label>
+                                <label class="label"><span class="label-text text-xs">H (innen)</span></label>
                                 <input type="number" id="case-h" value="70" class="input input-bordered w-full" />
                             </div>
                         </div>
-                        <div class="form-control w-full">
-                            <label class="label"><span class="label-text">Preis (€)</span></label>
-                            <input type="number" id="case-price" step="0.01" value="45.00" class="input input-bordered w-full" />
-                        </div>
-                        <div class="form-control w-full">
-                            <label class="label"><span class="label-text">URL</span></label>
-                            <input type="url" id="case-url" placeholder="https://..." class="input input-bordered w-full" />
+                        <div class="grid grid-cols-2 gap-2 mt-2">
+                            <div class="form-control">
+                                <label class="label"><span class="label-text text-xs">Preis (€)</span></label>
+                                <input type="number" id="case-price" step="0.01" value="45.00" class="input input-bordered w-full" />
+                            </div>
+                            <div class="form-control">
+                                <label class="label"><span class="label-text text-xs">URL</span></label>
+                                <input type="url" id="case-url" placeholder="https://..." class="input input-bordered w-full" />
+                            </div>
                         </div>
                         <div class="flex gap-2 mt-4">
-                            <button onclick="newCase()" class="btn btn-outline btn-sm">Neu</button>
-                            <button onclick="addCase()" class="btn btn-primary flex-1 btn-sm">Speichern</button>
-                            <button id="btn-delete-case" onclick="deleteCase()" class="btn btn-error btn-outline btn-sm">Löschen</button>
+                            <button onclick="newCase()" class="btn btn-outline btn-sm flex-1">Neu</button>
+                            <button onclick="addCase()" class="btn btn-primary btn-sm flex-1">Speichern</button>
+                            <button onclick="deleteCase()" class="btn btn-error btn-outline btn-sm flex-1">Löschen</button>
                         </div>
                     </div>
                 </div>
@@ -144,10 +190,7 @@
                 <!-- Pack Config -->
                 <div class="card bg-base-100 shadow-xl">
                     <div class="card-body">
-                        <div class="flex justify-between items-center mb-4">
-                            <h2 class="card-title">Konfiguration</h2>
-                            <div id="res-total-cells" class="badge badge-secondary">0 Zellen</div>
-                        </div>
+                        <h2 class="card-title mb-4">Konfiguration</h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="space-y-4">
                                 <div class="form-control">
@@ -178,12 +221,16 @@
                                         <input type="number" id="layout-rows" value="20" class="input input-bordered w-full" onchange="updateCalc()" />
                                     </div>
                                     <div class="form-control">
-                                        <label class="label justify-center"><span class="label-text">Typ</span></label>
+                                        <label class="label justify-center"><span class="label-text text-xs">Typ</span></label>
                                         <select id="layout-type" class="select select-bordered w-full" onchange="updateCalc()">
                                             <option value="grid">Grid</option>
                                             <option value="honey">Honey</option>
                                         </select>
                                     </div>
+                                </div>
+                                <div class="form-control">
+                                    <label class="label"><span class="label-text font-bold text-xs">Leistung (W)</span></label>
+                                    <input type="number" id="pack-power" value="3000" class="input input-bordered input-sm w-full" onchange="updateCalc()" />
                                 </div>
                             </div>
                             <div class="space-y-4">
@@ -194,23 +241,18 @@
                             </div>
                         </div>
                         <div class="card-actions justify-end mt-4">
-                            <button onclick="saveComparison()" class="btn btn-secondary btn-sm">Speichern</button>
+                            <button onclick="saveComparison()" class="btn btn-secondary btn-sm px-8">Speichern</button>
                         </div>
                     </div>
                 </div>
 
                 <!-- Result Stats -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="stats shadow bg-base-100"><div class="stat px-4 py-2"><div class="stat-title">Volt</div><div id="res-volt" class="stat-value text-xl">-</div></div></div>
-                    <div class="stats shadow bg-base-100"><div class="stat px-4 py-2"><div class="stat-title">Kap/Energie</div><div id="res-cap" class="stat-value text-xl">-</div><div id="res-wh" class="stat-desc">-</div></div></div>
-                    <div class="stats shadow bg-base-100"><div class="stat px-4 py-2"><div class="stat-title">Strom (cont)</div><div id="res-cont" class="stat-value text-xl">-</div><div id="res-max" class="stat-desc">-</div></div></div>
-                    <div class="stats shadow bg-base-100">
-                        <div class="stat px-4 py-2">
-                            <div class="stat-title">Kosten/Gew.</div>
-                            <div id="res-cost" class="stat-value text-xl">-</div>
-                            <div id="res-weight-costkwh" class="stat-desc">-</div>
-                        </div>
-                    </div>
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <div class="stats shadow bg-base-100"><div class="stat px-4 py-2"><div class="stat-title text-xs">Zellen</div><div id="res-total-cells" class="stat-value text-lg">-</div></div></div>
+                    <div class="stats shadow bg-base-100"><div class="stat px-4 py-2"><div class="stat-title text-xs">Volt</div><div id="res-volt" class="stat-value text-lg">-</div></div></div>
+                    <div class="stats shadow bg-base-100"><div class="stat px-4 py-2"><div class="stat-title text-xs">Energie</div><div id="res-cap" class="stat-value text-lg">-</div><div id="res-wh" class="stat-desc text-xs">-</div></div></div>
+                    <div class="stats shadow bg-base-100"><div class="stat px-4 py-2"><div class="stat-title text-xs">Last/Strom</div><div id="res-util" class="stat-value text-lg">-</div><div id="res-cont" class="stat-desc text-xs">-</div></div></div>
+                    <div class="stats shadow bg-base-100"><div class="stat px-4 py-2"><div class="stat-title text-xs">Kosten</div><div id="res-cost" class="stat-value text-lg">-</div><div id="res-weight-costkwh" class="stat-desc text-xs">-</div></div></div>
                 </div>
 
                 <!-- SVG Visualizer -->
@@ -236,6 +278,7 @@
                                     <tr>
                                         <th>Name</th>
                                         <th>Konfig</th>
+                                        <th>Last</th>
                                         <th>Energie</th>
                                         <th>Kosten</th>
                                         <th>Links</th>
@@ -254,22 +297,36 @@
     <script>
         let cells = JSON.parse(localStorage.getItem('battCells') || '[]');
         let cases = JSON.parse(localStorage.getItem('battCases') || '[]');
+        let formats = JSON.parse(localStorage.getItem('battFormats') || '[]');
         let comparisons = JSON.parse(localStorage.getItem('battComps') || '[]');
 
         function init() {
             if (!Array.isArray(cells)) cells = [];
             if (!Array.isArray(cases)) cases = [];
+            if (!Array.isArray(formats)) formats = [];
             if (!Array.isArray(comparisons)) comparisons = [];
 
-            if (cells.length === 0) cells.push({ id: 1, name: 'Samsung 30Q', price: 5, price100: 4.5, cap: 3000, weight: 48, cont: 15, max: 30, format: '18650' });
+            if (formats.length === 0) {
+                formats.push({ id: 1, name: '18650', gridH: 19.5, gridV: 19.5, dia: 18.4, height: 65, honeyV: 17.5 });
+                formats.push({ id: 2, name: '21700', gridH: 22.5, gridV: 22.5, dia: 21.4, height: 70, honeyV: 19.5 });
+            }
+            if (cells.length === 0) cells.push({ id: 1, name: 'Samsung 30Q', price: 5, price100: 4.5, cap: 3000, cont: 15, max: 30, formatId: 1 });
             if (cases.length === 0) cases.push({ id: 1, name: 'Manuell', l: 250, w: 200, h: 70, price: 0, url: '' });
             
+            renderFormatSelects();
             renderCellSelects();
             renderCaseSelects();
             loadCellToEditor();
+            loadFormatToEditor();
             loadCaseToEditor();
             updateCalc();
             renderComparisons();
+        }
+
+        function renderFormatSelects() {
+            const options = formats.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
+            document.getElementById('editor-format-select').innerHTML = options;
+            document.getElementById('cell-format').innerHTML = options;
         }
 
         function renderCellSelects() {
@@ -284,6 +341,49 @@
             document.getElementById('case-select').innerHTML = options;
         }
 
+        // --- Format Logic ---
+        function loadFormatToEditor() {
+            const format = formats.find(f => f.id == document.getElementById('editor-format-select').value);
+            if (!format) return;
+            document.getElementById('format-name').value = format.name;
+            document.getElementById('format-gridH').value = format.gridH;
+            document.getElementById('format-gridV').value = format.gridV;
+            document.getElementById('format-dia').value = format.dia;
+            document.getElementById('format-height').value = format.height;
+            document.getElementById('format-honeyV').value = format.honeyV || (format.gridV * 0.866).toFixed(1);
+        }
+        function newFormat() { 
+            document.getElementById('format-name').value = ''; 
+            document.getElementById('format-gridH').value = 22.5;
+            document.getElementById('format-gridV').value = 22.5;
+            document.getElementById('format-dia').value = 21.4;
+            document.getElementById('format-height').value = 70;
+            document.getElementById('format-honeyV').value = 19.5;
+        }
+        function addFormat() {
+            const format = { 
+                id: Date.now(), 
+                name: document.getElementById('format-name').value || 'Unbenannt',
+                gridH: parseFloat(document.getElementById('format-gridH').value),
+                gridV: parseFloat(document.getElementById('format-gridV').value),
+                dia: parseFloat(document.getElementById('format-dia').value),
+                height: parseFloat(document.getElementById('format-height').value),
+                honeyV: parseFloat(document.getElementById('format-honeyV').value)
+            };
+            const idx = formats.findIndex(f => f.name === format.name);
+            if (idx >= 0) { format.id = formats[idx].id; formats[idx] = format; } else formats.push(format);
+            localStorage.setItem('battFormats', JSON.stringify(formats));
+            renderFormatSelects();
+        }
+        function deleteFormat() {
+            const id = document.getElementById('editor-format-select').value;
+            if (formats.length <= 1 || !confirm("Löschen?")) return;
+            formats = formats.filter(f => f.id != id);
+            localStorage.setItem('battFormats', JSON.stringify(formats));
+            renderFormatSelects(); loadFormatToEditor();
+        }
+
+        // --- Cell Logic ---
         function loadCellToEditor() {
             const cell = cells[document.getElementById('editor-cell-select').value];
             if (!cell) return;
@@ -293,44 +393,32 @@
             document.getElementById('cell-cap').value = cell.cap;
             document.getElementById('cell-cont').value = cell.cont;
             document.getElementById('cell-max').value = cell.max;
-            document.getElementById('cell-format').value = cell.format || '18650';
+            document.getElementById('cell-format').value = cell.formatId;
             document.getElementById('cell-custom-link').value = cell.customLink || '';
             document.getElementById('cell-notes').value = cell.notes || '';
             updateCellLinks(cell.name);
         }
-
-        function updateCellLinks(name) {
-            document.getElementById('cell-link-google').href = `https://www.google.com/search?q=${encodeURIComponent(name)}`;
-            document.getElementById('cell-link-lygte').href = `https://www.google.com/search?q=site:lygte-info.dk+${encodeURIComponent(name)}`;
-        }
-
-        function newCell() {
-            document.getElementById('cell-name').value = '';
-            document.getElementById('cell-notes').value = '';
-            document.getElementById('cell-custom-link').value = '';
-            document.getElementById('cell-format').value = '18650';
-        }
-
+        function newCell() { document.getElementById('cell-name').value = ''; document.getElementById('cell-notes').value = ''; document.getElementById('cell-custom-link').value = ''; }
         function addCell() {
-            const name = document.getElementById('cell-name').value || 'Unbekannt';
-            const cellData = { id: Date.now(), name, price: parseFloat(document.getElementById('cell-price').value), price100: parseFloat(document.getElementById('cell-price100').value), cap: parseFloat(document.getElementById('cell-cap').value), weight: 0, cont: parseFloat(document.getElementById('cell-cont').value), max: parseFloat(document.getElementById('cell-max').value), notes: document.getElementById('cell-notes').value, format: document.getElementById('cell-format').value, customLink: document.getElementById('cell-custom-link').value };
-            const idx = cells.findIndex(c => c.name === name);
+            const cellData = { id: Date.now(), name: document.getElementById('cell-name').value || 'Unbekannt', price: parseFloat(document.getElementById('cell-price').value), price100: parseFloat(document.getElementById('cell-price100').value), cap: parseFloat(document.getElementById('cell-cap').value), cont: parseFloat(document.getElementById('cell-cont').value), max: parseFloat(document.getElementById('cell-max').value), notes: document.getElementById('cell-notes').value, formatId: parseInt(document.getElementById('cell-format').value), customLink: document.getElementById('cell-custom-link').value };
+            const idx = cells.findIndex(c => c.name === cellData.name);
             if (idx >= 0) cells[idx] = cellData; else cells.push(cellData);
             localStorage.setItem('battCells', JSON.stringify(cells));
-            renderCellSelects();
-            updateCalc();
+            renderCellSelects(); updateCalc();
         }
-
         function deleteCell() {
             const idx = document.getElementById('editor-cell-select').value;
             if (cells.length <= 1 || !confirm("Löschen?")) return;
             cells.splice(idx, 1);
             localStorage.setItem('battCells', JSON.stringify(cells));
-            renderCellSelects();
-            loadCellToEditor();
-            updateCalc();
+            renderCellSelects(); loadCellToEditor(); updateCalc();
+        }
+        function updateCellLinks(name) {
+            document.getElementById('cell-link-google').href = `https://www.google.com/search?q=${encodeURIComponent(name)}`;
+            document.getElementById('cell-link-lygte').href = `https://www.google.com/search?q=site:lygte-info.dk+${encodeURIComponent(name)}`;
         }
 
+        // --- Case Logic ---
         function loadCaseToEditor() {
             const c = cases[document.getElementById('editor-case-select').value];
             if (!c) return;
@@ -341,88 +429,75 @@
             document.getElementById('case-price').value = c.price;
             document.getElementById('case-url').value = c.url || '';
         }
-
-        function newCase() {
-            document.getElementById('case-name').value = '';
-            document.getElementById('case-url').value = '';
-        }
-
+        function newCase() { document.getElementById('case-name').value = ''; document.getElementById('case-url').value = ''; }
         function addCase() {
-            const name = document.getElementById('case-name').value || 'Box';
-            const caseData = { id: Date.now(), name, l: parseFloat(document.getElementById('case-l').value), w: parseFloat(document.getElementById('case-w').value), h: parseFloat(document.getElementById('case-h').value), price: parseFloat(document.getElementById('case-price').value), url: document.getElementById('case-url').value };
-            const idx = cases.findIndex(c => c.name === name);
+            const caseData = { id: Date.now(), name: document.getElementById('case-name').value || 'Box', l: parseFloat(document.getElementById('case-l').value), w: parseFloat(document.getElementById('case-w').value), h: parseFloat(document.getElementById('case-h').value), price: parseFloat(document.getElementById('case-price').value), url: document.getElementById('case-url').value };
+            const idx = cases.findIndex(c => c.name === caseData.name);
             if (idx >= 0) cases[idx] = caseData; else cases.push(caseData);
             localStorage.setItem('battCases', JSON.stringify(cases));
-            renderCaseSelects();
-            updateCalc();
+            renderCaseSelects(); updateCalc();
         }
-
         function deleteCase() {
             const idx = document.getElementById('editor-case-select').value;
             if (cases.length <= 1 || !confirm("Löschen?")) return;
             cases.splice(idx, 1);
             localStorage.setItem('battCases', JSON.stringify(cases));
-            renderCaseSelects();
-            loadCaseToEditor();
-            updateCalc();
+            renderCaseSelects(); loadCaseToEditor(); updateCalc();
         }
 
+        // --- Calculator ---
         function updateCalc() {
             try {
                 const cell = cells[document.getElementById('cell-select').value];
                 const packCase = cases[document.getElementById('case-select').value];
-                if (!cell) return;
+                const power = parseFloat(document.getElementById('pack-power').value) || 0;
+                if (!cell || !packCase) return;
+                const format = formats.find(f => f.id == cell.formatId) || formats[0];
 
                 const s = parseInt(document.getElementById('pack-s').value) || 0;
                 const p = parseInt(document.getElementById('pack-p').value) || 0;
                 const totalCells = s * p;
-                document.getElementById('res-total-cells').innerText = `${totalCells} Zellen`;
+                document.getElementById('res-total-cells').innerText = `${totalCells}`;
 
-                const boxL = packCase.l;
-                const boxW = packCase.w;
-                const boxH = packCase.h;
+                const packVolt = s * 3.7;
+                const nominalWh = packVolt * p * cell.cap / 1000;
+                const packContA = p * cell.cont;
+                const reqA = packVolt > 0 ? (power / packVolt) : 0;
+                const loadPercent = packContA > 0 ? Math.round((reqA / packContA) * 100) : 0;
 
-                // Rastermaße
-                let gridH = 19.5, gridV = 19.5, actualDia = 18.4, actualHeight = 65;
-                if (cell.format === '21700') { gridH = 22.5; gridV = 22.5; actualDia = 21.4; actualHeight = 70; }
-
-                const nominalWh = s * 3.7 * p * cell.cap / 1000;
-                document.getElementById('res-volt').innerText = (s * 3.7).toFixed(1) + 'V';
+                document.getElementById('res-volt').innerText = packVolt.toFixed(1) + 'V';
                 document.getElementById('res-cap').innerText = (p * cell.cap / 1000).toFixed(1) + 'Ah';
                 document.getElementById('res-wh').innerText = Math.round(nominalWh) + 'Wh';
-                document.getElementById('res-cont').innerText = (p * cell.cont) + 'A';
-                document.getElementById('res-max').innerText = 'Peak: ' + (p * cell.max) + 'A';
                 
-                const cost = Math.round(totalCells * (totalCells >= 100 ? cell.price100 : cell.price) + (packCase ? packCase.price : 0));
-                const weight = (totalCells * (cell.weight || 0) / 1000).toFixed(1);
+                document.getElementById('res-util').innerText = `${loadPercent}% Last`;
+                document.getElementById('res-cont').innerText = `${reqA.toFixed(1)}A / ${packContA}A`;
+                
+                const cost = Math.round(totalCells * (totalCells >= 100 ? cell.price100 : cell.price) + packCase.price);
                 const priceKwh = nominalWh > 0 ? Math.round(cost / (nominalWh / 1000)) : 0;
-                
                 document.getElementById('res-cost').innerText = cost + '€';
-                document.getElementById('res-weight-costkwh').innerText = `${weight}kg | ${priceKwh}€/kWh`;
+                document.getElementById('res-weight-costkwh').innerText = `${priceKwh}€/kWh | Geh. inkl.`;
 
                 const lRows = parseInt(document.getElementById('layout-rows').value) || totalCells;
                 const lCols = Math.ceil(totalCells / lRows);
                 const isHoney = document.getElementById('layout-type').value === 'honey';
 
-                let packL = lRows * gridH;
-                let packW = lCols * gridV;
+                let packL = lRows * format.gridH;
+                let packW = lCols * format.gridV;
                 if (isHoney) {
-                    if (cell.format === '21700') { gridV = 19.5; }
-                    packL = (lRows + 0.5) * gridH;
-                    packW = (lCols - 1) * gridV + actualDia;
+                    packL = (lRows + 0.5) * format.gridH;
+                    packW = (lCols - 1) * format.honeyV + format.dia;
                 }
-                const packHeight = actualHeight;
 
-                const tooBig = packL > boxL || packW > boxW || packHeight > boxH;
+                const tooBig = packL > packCase.l || packW > packCase.w || format.height > packCase.h;
                 document.getElementById('dim-warning').classList.toggle('hidden', !tooBig);
 
                 const svg = document.getElementById('visualizer');
                 const pad = 20;
-                const vW = Math.max(boxL, packL) + pad * 2;
-                const vH = Math.max(boxW, packW) + pad * 2;
+                const vW = Math.max(packCase.l, packL) + pad * 2;
+                const vH = Math.max(packCase.w, packW) + pad * 2;
                 svg.setAttribute('viewBox', `0 0 ${vW} ${vH}`);
 
-                let svgC = `<rect x="${pad}" y="${pad}" width="${boxL}" height="${boxW}" fill="none" stroke="#666" stroke-dasharray="5,5" /><text x="${pad}" y="${pad - 5}" font-size="12" fill="#666">${boxL}x${boxW}mm</text>`;
+                let svgC = `<rect x="${pad}" y="${pad}" width="${packCase.l}" height="${packCase.w}" fill="none" stroke="#666" stroke-dasharray="5,5" /><text x="${pad}" y="${pad - 5}" font-size="12" fill="#666">${packCase.l}x${packCase.w}mm</text>`;
                 const cellClass = tooBig ? 'is-invalid' : '';
                 const cCol = tooBig ? '#fee2e2' : '#dcfce7';
                 const sCol = tooBig ? '#ef4444' : '#22c55e';
@@ -430,47 +505,43 @@
                     const rIdx = i % lRows;
                     const cIdx = Math.floor(i / lRows);
                     let offX = 0;
-                    if (isHoney && cIdx % 2 === 1) offX = gridH / 2;
-                    const cx = pad + rIdx * gridH + gridH/2 + offX;
-                    const cy = pad + cIdx * (isHoney ? gridV : gridV) + gridV/2;
-                    svgC += `<circle cx="${cx}" cy="${cy}" r="${actualDia/2 - 0.5}" fill="${cCol}" stroke="${sCol}" class="${cellClass}" />`;
+                    if (isHoney && cIdx % 2 === 1) offX = format.gridH / 2;
+                    const cx = pad + rIdx * format.gridH + format.gridH/2 + offX;
+                    const cy = pad + cIdx * (isHoney ? format.honeyV : format.gridV) + (isHoney ? format.dia/2 : format.gridV/2);
+                    svgC += `<circle cx="${cx}" cy="${cy}" r="${format.dia/2 - 0.5}" fill="${cCol}" stroke="${sCol}" class="${cellClass}" />`;
                 }
-                svgC += `<text x="${pad}" y="${pad + packW + 15}" font-size="12" font-weight="bold" fill="${tooBig ? 'red' : 'green'}">Pack: ${packL.toFixed(1)} x ${packW.toFixed(1)} x ${packHeight}mm</text>`;
+                svgC += `<text x="${pad}" y="${pad + packW + 15}" font-size="12" font-weight="bold" fill="${tooBig ? 'red' : 'green'}">Pack: ${packL.toFixed(1)} x ${packW.toFixed(1)} x ${format.height}mm</text>`;
                 svg.innerHTML = svgC;
-            } catch (e) {
-                console.error("Fehler in updateCalc:", e);
-            }
+            } catch (e) { console.error(e); }
         }
 
         function saveComparison() {
             const cellSelect = document.getElementById('cell-select');
             const caseSelect = document.getElementById('case-select');
-            const cellIdx = cellSelect.value;
-            const caseIdx = caseSelect.value;
-            const cell = cells[cellIdx];
-            const packCase = cases[caseIdx];
+            const cell = cells[cellSelect.value];
+            const packCase = cases[caseSelect.value];
+            const power = parseFloat(document.getElementById('pack-power').value) || 0;
+            if (!cell || !packCase) return alert("Wähle Zelle & Gehäuse.");
             
-            if (!cell) return alert("Bitte eine Zelle wählen.");
-            if (!packCase) return alert("Bitte ein Gehäuse wählen.");
-
             const s = parseInt(document.getElementById('pack-s').value) || 0;
             const p = parseInt(document.getElementById('pack-p').value) || 0;
-            const total = s * p;
-            
-            const wh = Math.round(s * 3.7 * p * cell.cap / 1000);
-            const cellPrice = total >= 100 ? cell.price100 : cell.price;
-            const cost = Math.round(total * cellPrice + packCase.price);
+            const packVolt = s * 3.7;
+            const packContA = p * cell.cont;
+            const reqA = packVolt > 0 ? (power / packVolt) : 0;
+            const loadPercent = packContA > 0 ? Math.round((reqA / packContA) * 100) : 0;
 
-            comparisons.push({
-                name: document.getElementById('pack-name').value || (cell.name + ' ' + s + 'S' + p + 'P'),
-                cellIdx: parseInt(cellIdx),
-                caseIdx: parseInt(caseIdx),
-                s, p,
-                lRows: document.getElementById('layout-rows').value,
-                lType: document.getElementById('layout-type').value,
-                wh: wh,
-                cost: cost,
-                notes: document.getElementById('pack-notes').value
+            comparisons.push({ 
+                name: document.getElementById('pack-name').value || `${cell.name} ${s}S${p}P`, 
+                cellIdx: cellSelect.value, 
+                caseIdx: caseSelect.value, 
+                s, p, 
+                power,
+                loadPercent,
+                lRows: document.getElementById('layout-rows').value, 
+                lType: document.getElementById('layout-type').value, 
+                wh: Math.round(packVolt * p * cell.cap / 1000), 
+                cost: Math.round((s*p) * (s*p >= 100 ? cell.price100 : cell.price) + packCase.price), 
+                notes: document.getElementById('pack-notes').value 
             });
             localStorage.setItem('battComps', JSON.stringify(comparisons));
             renderComparisons();
@@ -479,11 +550,12 @@
         function loadComparison(i) {
             const c = comparisons[i];
             if (!c) return;
-            document.getElementById('pack-name').value = c.name || '';
+            document.getElementById('pack-name').value = c.name;
             document.getElementById('cell-select').value = c.cellIdx;
             document.getElementById('case-select').value = c.caseIdx;
             document.getElementById('pack-s').value = c.s;
             document.getElementById('pack-p').value = c.p;
+            document.getElementById('pack-power').value = c.power || 3000;
             document.getElementById('layout-rows').value = c.lRows;
             document.getElementById('layout-type').value = c.lType;
             document.getElementById('pack-notes').value = c.notes || '';
@@ -491,26 +563,18 @@
         }
 
         function renderComparisons() {
-            const list = document.getElementById('comp-list');
-            if (!list) return;
-            
-            list.innerHTML = comparisons.map((c, i) => {
+            document.getElementById('comp-list').innerHTML = comparisons.map((c, i) => {
                 const cell = cells[c.cellIdx] || { name: '?' };
-                const packCase = cases[c.caseIdx] || { name: '?', url: '' };
-                const configStr = c.s ? `${c.s}S${c.p}P` : (c.config || '-');
-                
+                const packCase = cases[c.caseIdx] || { url: '' };
                 return `
                 <tr onclick="loadComparison(${i})" class="clickable-row">
-                    <td>
-                        <div class="font-bold">${c.name || 'Unbenannt'}</div>
-                        <div class="text-xs opacity-50">${c.notes || ''}</div>
-                    </td>
-                    <td>${configStr}</td>
-                    <td>${c.wh || 0}Wh</td>
-                    <td>${c.cost || 0}€</td>
+                    <td><div class="font-bold text-sm">${c.name}</div><div class="text-xs opacity-50">${c.notes || ''}</div></td>
+                    <td>${c.s}S${c.p}P</td>
+                    <td class="text-xs font-bold ${c.loadPercent > 100 ? 'text-error' : 'text-success'}">${c.loadPercent || 0}%</td>
+                    <td>${c.wh}Wh</td><td>${c.cost}€</td>
                     <td>
                         <div class="flex gap-1">
-                            ${cell.customLink ? `<a href="${cell.customLink}" target="_blank" onclick="event.stopPropagation()" class="btn btn-ghost btn-xs">Link</a>` : `<a href="https://www.google.com/search?q=${encodeURIComponent(cell.name)}" target="_blank" onclick="event.stopPropagation()" class="btn btn-ghost btn-xs">Cell</a>`}
+                            <a href="${cell.customLink || `https://www.google.com/search?q=${encodeURIComponent(cell.name)}`}" target="_blank" onclick="event.stopPropagation()" class="btn btn-ghost btn-xs">Cell</a>
                             ${packCase.url ? `<a href="${packCase.url}" target="_blank" onclick="event.stopPropagation()" class="btn btn-ghost btn-xs">Case</a>` : ''}
                         </div>
                     </td>
@@ -520,8 +584,8 @@
         }
 
         function deleteComp(i) { comparisons.splice(i, 1); localStorage.setItem('battComps', JSON.stringify(comparisons)); renderComparisons(); }
-        function exportData() { const blob = new Blob([JSON.stringify({ cells, cases, comparisons }, null, 2)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'batt-config.json'; a.click(); }
-        function importData(e) { const f = e.target.files[0]; if(!f) return; const r = new FileReader(); r.onload = (ev) => { const d = JSON.parse(ev.target.result); if(d.cells) cells = d.cells; if(d.cases) cases = d.cases; if(d.comparisons) comparisons = d.comparisons; localStorage.setItem('battCells', JSON.stringify(cells)); localStorage.setItem('battCases', JSON.stringify(cases)); localStorage.setItem('battComps', JSON.stringify(comparisons)); init(); }; r.readAsText(f); }
+        function exportData() { const blob = new Blob([JSON.stringify({ cells, cases, formats, comparisons }, null, 2)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'batt-config.json'; a.click(); }
+        function importData(e) { const f = e.target.files[0]; if(!f) return; const r = new FileReader(); r.onload = (ev) => { const d = JSON.parse(ev.target.result); if(d.cells) cells = d.cells; if(d.cases) cases = d.cases; if(d.formats) formats = d.formats; if(d.comparisons) comparisons = d.comparisons; localStorage.setItem('battCells', JSON.stringify(cells)); localStorage.setItem('battCases', JSON.stringify(cases)); localStorage.setItem('battFormats', JSON.stringify(formats)); localStorage.setItem('battComps', JSON.stringify(comparisons)); init(); }; r.readAsText(f); }
 
         init();
     </script>
