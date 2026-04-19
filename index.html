@@ -33,18 +33,18 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="space-y-6">
                 <!-- Cell Editor -->
-                <div class="card bg-base-100 shadow-xl overflow-visible">
+                <div class="card bg-base-100 shadow-xl overflow-visible border border-base-300">
                     <div class="collapse collapse-arrow">
                         <input type="checkbox" checked /> 
                         <div class="collapse-title flex items-center">
-                            <h2 class="card-title">Zellen-Datenbank</h2>
+                            <h2 class="text-lg font-bold">Zellen</h2>
                         </div>
                         <div class="collapse-content">
                             <div class="form-control w-full">
-                                <label class="label"><span class="label-text">Zelle wählen</span></label>
+                                <label class="label"><span class="label-text text-xs">Zelle wählen</span></label>
                                 <select id="editor-cell-select" class="select select-bordered w-full" onchange="loadCellToEditor()"></select>
                             </div>
-                            <div class="divider">Bearbeiten / Neu</div>
+                            <div class="divider text-xs">Bearbeiten / Neu</div>
                             <div class="form-control w-full">
                                 <label class="label">
                                     <span class="label-text">Zellen Name</span>
@@ -103,11 +103,11 @@
                 </div>
 
                 <!-- Format Editor -->
-                <div class="card bg-base-100 shadow-xl overflow-visible">
+                <div class="card bg-base-100 shadow-xl overflow-visible border border-base-300">
                     <div class="collapse collapse-arrow">
                         <input type="checkbox" /> 
                         <div class="collapse-title flex items-center">
-                            <h2 class="card-title text-sm">Formate (Rastermaße)</h2>
+                            <h2 class="text-lg font-bold">Zell-Formate</h2>
                         </div>
                         <div class="collapse-content">
                             <div class="form-control w-full">
@@ -152,11 +152,11 @@
                 </div>
 
                 <!-- Case Editor -->
-                <div class="card bg-base-100 shadow-xl overflow-visible">
+                <div class="card bg-base-100 shadow-xl overflow-visible border border-base-300">
                     <div class="collapse collapse-arrow">
                         <input type="checkbox" /> 
                         <div class="collapse-title flex items-center">
-                            <h2 class="card-title">Gehäuse-Datenbank</h2>
+                            <h2 class="text-lg font-bold">Gehäuse</h2>
                         </div>
                         <div class="collapse-content">
                             <div class="form-control w-full">
@@ -164,7 +164,7 @@
                             </div>
                             <div class="divider">Bearbeiten / Neu</div>
                             <div class="form-control w-full">
-                                <label class="label"><span class="label-text">Gehäuse Name</span></label>
+                                <label class="label"><span class="label-text text-sm">Gehäuse Name</span></label>
                                 <input type="text" id="case-name" placeholder="Pelicase 1200" class="input input-bordered w-full" />
                             </div>
                             <div class="grid grid-cols-3 gap-2">
@@ -210,16 +210,16 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="space-y-4">
                                 <div class="form-control">
-                                    <label class="label"><span class="label-text font-bold">Name</span></label>
+                                    <label class="label"><span class="label-text font-bold text-sm">Name</span></label>
                                     <input type="text" id="pack-name" placeholder="Mein Setup" class="input input-bordered w-full" />
                                 </div>
                                 <div class="grid grid-cols-2 gap-2">
                                     <div class="form-control">
-                                        <label class="label"><span class="label-text font-bold">Zelle</span></label>
+                                        <label class="label"><span class="label-text font-bold text-sm">Zelle</span></label>
                                         <select id="cell-select" class="select select-bordered w-full" onchange="updateCalc()"></select>
                                     </div>
                                     <div class="form-control">
-                                        <label class="label"><span class="label-text font-bold">Gehäuse</span></label>
+                                        <label class="label"><span class="label-text font-bold text-sm">Gehäuse</span></label>
                                         <select id="case-select" class="select select-bordered w-full" onchange="updateCalc()"></select>
                                     </div>
                                 </div>
@@ -251,7 +251,7 @@
                             </div>
                             <div class="space-y-4">
                                 <div class="form-control">
-                                    <label class="label"><span class="label-text font-bold">Notizen</span></label>
+                                    <label class="label"><span class="label-text font-bold text-sm">Notizen</span></label>
                                     <textarea id="pack-notes" class="textarea textarea-bordered h-full min-h-[150px]" placeholder="Konfig Details..."></textarea>
                                 </div>
                             </div>
@@ -264,18 +264,22 @@
 
                 <!-- Result Stats -->
                 <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-                    <div class="stats shadow bg-base-100"><div class="stat px-4 py-2"><div class="stat-title text-xs">Zellen</div><div id="res-total-cells" class="stat-value text-lg">-</div></div></div>
-                    <div class="stats shadow bg-base-100"><div class="stat px-4 py-2"><div class="stat-title text-xs">Volt</div><div id="res-volt" class="stat-value text-lg">-</div></div></div>
-                    <div class="stats shadow bg-base-100"><div class="stat px-4 py-2"><div class="stat-title text-xs">Energie</div><div id="res-cap" class="stat-value text-lg">-</div><div id="res-wh" class="stat-desc text-xs">-</div></div></div>
-                    <div class="stats shadow bg-base-100"><div class="stat px-4 py-2"><div class="stat-title text-xs">Last/Strom</div><div id="res-util" class="stat-value text-lg">-</div><div id="res-cont" class="stat-desc text-xs">-</div></div></div>
-                    <div class="stats shadow bg-base-100"><div class="stat px-4 py-2"><div class="stat-title text-xs">Kosten</div><div id="res-cost" class="stat-value text-lg">-</div><div id="res-weight-costkwh" class="stat-desc text-xs">-</div></div></div>
+                    <div class="stats shadow bg-base-100 border border-base-300"><div class="stat px-4 py-2"><div class="stat-title text-xs">Zellen</div><div id="res-total-cells" class="stat-value text-lg">-</div></div></div>
+                    <div class="stats shadow bg-base-100 border border-base-300"><div class="stat px-4 py-2"><div class="stat-title text-xs">Volt</div><div id="res-volt" class="stat-value text-lg">-</div></div></div>
+                    <div class="stats shadow bg-base-100 border border-base-300"><div class="stat px-4 py-2"><div class="stat-title text-xs">Energie</div><div id="res-cap" class="stat-value text-lg">-</div><div id="res-wh" class="stat-desc text-xs">-</div></div></div>
+                    <div class="stats shadow bg-base-100 border border-base-300"><div class="stat px-4 py-2"><div class="stat-title text-xs">Last/Strom</div><div id="res-util" class="stat-value text-lg">-</div><div id="res-cont" class="stat-desc text-xs">-</div></div></div>
+                    <div class="stats shadow bg-base-100 border border-base-300"><div class="stat px-4 py-2"><div class="stat-title text-xs">Kosten</div><div id="res-cost" class="stat-value text-lg">-</div><div id="res-weight-costkwh" class="stat-desc text-xs">-</div></div></div>
                 </div>
 
                 <!-- SVG Visualizer -->
-                <div class="card bg-base-100 shadow-xl overflow-hidden">
+                <div class="card bg-base-100 shadow-xl overflow-hidden border border-base-300">
                     <div class="card-body p-2">
                         <div class="flex justify-between items-center mb-2 px-2">
-                            <h2 class="card-title">Vorschau (mm)</h2>
+                            <h2 class="card-title text-sm">Vorschau (mm)</h2>
+                            <div class="flex gap-2 mr-auto ml-4">
+                                <div id="area-util" class="badge badge-outline badge-sm">0% Fläche</div>
+                                <div id="vol-util" class="badge badge-outline badge-sm">0% Volumen</div>
+                            </div>
                             <div id="dim-warning" class="badge badge-error hidden">ZU GROSS!</div>
                         </div>
                         <div class="bg-gray-100 flex items-center justify-center min-h-[400px] border rounded p-4">
@@ -285,16 +289,18 @@
                 </div>
 
                 <!-- Comparison -->
-                <div class="card bg-base-100 shadow-xl">
+                <div class="card bg-base-100 shadow-xl border border-base-300">
                     <div class="card-body">
-                        <h2 class="card-title">Vergleich</h2>
+                        <h2 class="card-title text-sm">Vergleich</h2>
                         <div class="overflow-x-auto mt-4">
-                            <table class="table table-zebra w-full">
+                            <table class="table table-zebra w-full text-xs">
                                 <thead>
                                     <tr>
                                         <th>Name</th>
                                         <th>Konfig</th>
                                         <th>Last</th>
+                                        <th>Fläche</th>
+                                        <th>Volumen</th>
                                         <th>Energie</th>
                                         <th>Kosten</th>
                                         <th>Links</th>
@@ -504,6 +510,16 @@
                     packW = (lCols - 1) * format.honeyV + format.dia;
                 }
 
+                const caseArea = packCase.l * packCase.w;
+                const packArea = packL * packW;
+                const areaUtil = caseArea > 0 ? Math.round((packArea / caseArea) * 100) : 0;
+                document.getElementById('area-util').innerText = `${areaUtil}% Fläche`;
+
+                const caseVol = caseArea * packCase.h;
+                const packVolVal = packArea * format.height;
+                const volUtil = caseVol > 0 ? Math.round((packVolVal / caseVol) * 100) : 0;
+                document.getElementById('vol-util').innerText = `${volUtil}% Volumen`;
+
                 const tooBig = packL > packCase.l || packW > packCase.w || format.height > packCase.h;
                 document.getElementById('dim-warning').classList.toggle('hidden', !tooBig);
 
@@ -534,33 +550,44 @@
         function saveComparison() {
             const cellSelect = document.getElementById('cell-select');
             const caseSelect = document.getElementById('case-select');
-            const cellIdx = cellSelect.value;
-            const caseIdx = caseSelect.value;
-            const cell = cells[cellIdx];
-            const packCase = cases[caseIdx];
+            const cell = cells[cellSelect.value];
+            const packCase = cases[caseSelect.value];
             const power = parseFloat(document.getElementById('pack-power').value) || 0;
             
-            if (!cell) return alert("Bitte eine Zelle wählen.");
-            if (!packCase) return alert("Bitte ein Gehäuse wählen.");
+            if (!cell || !packCase) return alert("Bitte eine Zelle wählen.");
+            const format = formats.find(f => f.id == cell.formatId) || formats[0];
 
             const s = parseInt(document.getElementById('pack-s').value) || 0;
             const p = parseInt(document.getElementById('pack-p').value) || 0;
+            const total = s * p;
             const packVolt = s * 3.7;
             const packContA = p * cell.cont;
             const reqA = packVolt > 0 ? (power / packVolt) : 0;
             const loadPercent = packContA > 0 ? Math.round((reqA / packContA) * 100) : 0;
 
+            const lRows = parseInt(document.getElementById('layout-rows').value) || total;
+            const lCols = Math.ceil(total / lRows);
+            const isHoney = document.getElementById('layout-type').value === 'honey';
+            let packL = lRows * format.gridH;
+            let packW = lCols * format.gridV;
+            if (isHoney) {
+                packL = (lRows + 0.5) * format.gridH;
+                packW = (lCols - 1) * format.honeyV + format.dia;
+            }
+            const caseArea = packCase.l * packCase.w;
+            const packArea = packL * packW;
+            const areaUtil = caseArea > 0 ? Math.round((packArea / caseArea) * 100) : 0;
+            const volUtil = (caseArea * packCase.h) > 0 ? Math.round((packArea * format.height / (caseArea * packCase.h)) * 100) : 0;
+
             comparisons.push({ 
                 name: document.getElementById('pack-name').value || `${cell.name} ${s}S${p}P`, 
-                cellIdx: parseInt(cellIdx), 
-                caseIdx: parseInt(caseIdx), 
-                s, p, 
-                power,
-                loadPercent,
+                cellIdx: parseInt(cellSelect.value), 
+                caseIdx: parseInt(caseSelect.value), 
+                s, p, power, loadPercent, areaUtil, volUtil,
                 lRows: document.getElementById('layout-rows').value, 
                 lType: document.getElementById('layout-type').value, 
                 wh: Math.round(packVolt * p * cell.cap / 1000), 
-                cost: Math.round((s*p) * (s*p >= 100 ? cell.price100 : cell.price) + packCase.price), 
+                cost: Math.round(total * (total >= 100 ? cell.price100 : cell.price) + packCase.price), 
                 notes: document.getElementById('pack-notes').value 
             });
             localStorage.setItem('battComps', JSON.stringify(comparisons));
@@ -593,6 +620,8 @@
                     <td><div class="font-bold text-sm">${c.name}</div><div class="text-xs opacity-50">${c.notes || ''}</div></td>
                     <td>${c.s}S${c.p}P</td>
                     <td class="text-xs font-bold ${c.loadPercent > 100 ? 'text-error' : 'text-success'}">${c.loadPercent || 0}%</td>
+                    <td class="text-xs">${c.areaUtil || 0}%</td>
+                    <td class="text-xs">${c.volUtil || 0}%</td>
                     <td>${c.wh}Wh</td><td>${c.cost}€</td>
                     <td>
                         <div class="flex gap-1">
