@@ -282,8 +282,21 @@
                             </div>
                             <div id="dim-warning" class="badge badge-error hidden">ZU GROSS!</div>
                         </div>
-                        <div class="bg-gray-100 flex items-center justify-center min-h-[400px] border rounded p-4">
-                            <svg id="visualizer" viewBox="0 0 300 300" class="max-w-full max-h-[500px] drop-shadow-md"></svg>
+                        <div class="bg-gray-100 flex flex-col gap-4 p-4 border rounded">
+                            <div class="flex flex-col items-center">
+                                <span class="text-[10px] uppercase font-bold opacity-50 mb-1">Draufsicht (L x B)</span>
+                                <svg id="visualizer" viewBox="0 0 300 300" class="max-w-full max-h-[400px] drop-shadow-md bg-white rounded"></svg>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="flex flex-col items-center">
+                                    <span class="text-[10px] uppercase font-bold opacity-50 mb-1">Seitenansicht (L x H)</span>
+                                    <svg id="visualizer-side-l" viewBox="0 0 300 100" class="w-full h-auto max-h-[200px] drop-shadow-md bg-white rounded"></svg>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <span class="text-[10px] uppercase font-bold opacity-50 mb-1">Seitenansicht (B x H)</span>
+                                    <svg id="visualizer-side-w" viewBox="0 0 300 100" class="w-full h-auto max-h-[200px] drop-shadow-md bg-white rounded"></svg>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -314,7 +327,7 @@
             </div>
         </div>
         <footer class="mt-8 text-center text-xs opacity-30">
-            Code zuletzt geändert: 2026-04-18 20:25:00
+            Code zuletzt geändert: 2026-04-20 14:15:00
         </footer>
     </div>
 
@@ -551,16 +564,11 @@
                 const tooBig = packL > packCase.l || packW > packCase.w || format.height > packCase.h;
                 document.getElementById('dim-warning').classList.toggle('hidden', !tooBig);
 
-                const svg = document.getElementById('visualizer');
-                const pad = 20;
-                const vW = Math.max(packCase.l, packL) + pad * 2;
-                const vH = Math.max(packCase.w, packW) + pad * 2;
-                svg.setAttribute('viewBox', `0 0 ${vW} ${vH}`);
-
                 const centerOffsetX = (packCase.l - packL) / 2;
                 const centerOffsetY = (packCase.w - packW) / 2;
+                const centerOffsetH = (packCase.h - format.height) / 2;
 
-                let svgC = `<rect x="${pad}" y="${pad}" width="${packCase.l}" height="${packCase.w}" fill="none" stroke="#666" stroke-dasharray="5,5" /><text x="${pad}" y="${pad - 5}" font-size="12" fill="#666">${packCase.l}x${packCase.w}mm</text>`;
+                const pad = 20;
                 const cellClass = tooBig ? 'is-invalid' : '';
                 const groupColors = ['#22c55e', '#facc15']; 
 
@@ -571,7 +579,7 @@
                         c = idx % numVert;             
                         if (r % 2 === 1) c = (numVert - 1) - c; 
                         if (isHoney && r % 2 === 1) offY = format.gridV / 2;
-                        const cx = pad + centerOffsetX + r * format.honeyV + visualDia/2;
+                        const cx = pad + centerOffsetX + r * (isHoney ? format.honeyV : format.gridH) + visualDia/2;
                         const cy = pad + centerOffsetY + c * format.gridV + format.gridV/2 + offY;
                         return { cx, cy };
                     } else {
@@ -580,12 +588,30 @@
                         if (c % 2 === 1) r = (numHoriz - 1) - r; 
                         if (isHoney && c % 2 === 1) offX = format.gridH / 2;
                         const cx = pad + centerOffsetX + r * format.gridH + format.gridH/2 + offX;
-                        const cy = pad + centerOffsetY + c * format.honeyV + visualDia/2;
+                        const cy = pad + centerOffsetY + c * (isHoney ? format.honeyV : format.gridV) + visualDia/2;
                         return { cx, cy };
                     }
                 };
 
-                // Nickel strips
+                // --- TOP VIEW ---
+                const svgTop = document.getElementById('visualizer');
+                svgTop.setAttribute('viewBox', `0 0 ${Math.max(packCase.l, packL) + pad * 2} ${Math.max(packCase.w, packW) + pad * 2}`);
+                let svgC = `<rect x="${pad}" y="${pad}" width="${packCase.l}" height="${packCase.w}" fill="none" stroke="#666" stroke-dasharray="5,5" /><text x="${pad}" y="${pad - 5}" font-size="12" fill="#666">${packCase.l}x${packCase.w}mm</text>`;
+                
+                // --- SIDE VIEW L (Length x Height) ---
+                const maxSideDim = Math.max(packCase.l, packL, packCase.w, packW);
+                const maxSideH = Math.max(packCase.h, format.height);
+                
+                const svgSideL = document.getElementById('visualizer-side-l');
+                svgSideL.setAttribute('viewBox', `0 0 ${maxSideDim + pad * 2} ${maxSideH + pad * 2}`);
+                let svgSL = `<rect x="${pad}" y="${pad}" width="${packCase.l}" height="${packCase.h}" fill="none" stroke="#666" stroke-dasharray="5,5" /><text x="${pad}" y="${pad - 5}" font-size="12" fill="#666">${packCase.l}x${packCase.h}mm</text>`;
+
+                // --- SIDE VIEW W (Width x Height) ---
+                const svgSideW = document.getElementById('visualizer-side-w');
+                svgSideW.setAttribute('viewBox', `0 0 ${maxSideDim + pad * 2} ${maxSideH + pad * 2}`);
+                let svgSW = `<rect x="${pad}" y="${pad}" width="${packCase.w}" height="${packCase.h}" fill="none" stroke="#666" stroke-dasharray="5,5" /><text x="${pad}" y="${pad - 5}" font-size="12" fill="#666">${packCase.w}x${packCase.h}mm</text>`;
+
+                // Nickel strips (Top only)
                 for(let g=0; g<s; g++) {
                     let points = [];
                     for(let i=g*p; i<(g+1)*p && i<totalCells; i++) {
@@ -604,11 +630,25 @@
                     const groupColor = tooBig ? '#fee2e2' : groupColors[(sIdx-1) % 2];
                     const strokeColor = tooBig ? '#ef4444' : '#475569';
 
+                    // Top View
                     svgC += `<circle cx="${cx}" cy="${cy}" r="${visualDia/2 - 0.5}" fill="${groupColor}" stroke="${strokeColor}" stroke-width="0.8" class="${cellClass}" />`;
                     svgC += `<text x="${cx}" y="${cy + 3}" font-size="8" font-weight="bold" text-anchor="middle" fill="#000" opacity="0.7" style="pointer-events:none">S${sIdx}</text>`;
+
+                    // Side Views: vertical centering
+                    const yOffset = pad + centerOffsetH;
+                    
+                    // Side L (X=cx, Y=from centerOffset)
+                    svgSL += `<rect x="${cx - visualDia/2}" y="${yOffset}" width="${visualDia}" height="${format.height}" fill="${groupColor}" stroke="${strokeColor}" stroke-width="0.5" opacity="${fillVertical ? 0.7 : 0.4}" />`;
+                    
+                    // Side W (X=cy, Y=from centerOffset)
+                    svgSW += `<rect x="${cy - visualDia/2}" y="${yOffset}" width="${visualDia}" height="${format.height}" fill="${groupColor}" stroke="${strokeColor}" stroke-width="0.5" opacity="${fillVertical ? 0.4 : 0.7}" />`;
                 }
-                svgC += `<text x="${pad}" y="${pad + packCase.w + 15}" font-size="12" font-weight="bold" fill="${tooBig ? 'red' : 'green'}">Pack: ${packL.toFixed(1)} x ${packW.toFixed(1)} x ${format.height}mm</text>`;
-                svg.innerHTML = svgC;
+                
+                svgC += `<text x="${pad}" y="${pad + Math.max(packCase.w, packW) + 15}" font-size="12" font-weight="bold" fill="${tooBig ? 'red' : 'green'}">Pack: ${packL.toFixed(1)} x ${packW.toFixed(1)} x ${format.height}mm</text>`;
+                
+                svgTop.innerHTML = svgC;
+                svgSideL.innerHTML = svgSL;
+                svgSideW.innerHTML = svgSW;
             } catch (e) { console.error(e); }
         }
 
