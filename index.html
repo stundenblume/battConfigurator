@@ -280,20 +280,22 @@
                                 <div id="area-util" class="badge badge-outline badge-sm">0% Fläche</div>
                                 <div id="vol-util" class="badge badge-outline badge-sm">0% Volumen</div>
                             </div>
-                            <div id="dim-warning" class="badge badge-error hidden">ZU GROSS!</div>
+                            <div class="flex gap-2">
+                                <button onclick="rotateCase()" class="btn btn-xs btn-outline">Rotieren ↻</button>
+                            </div>
                         </div>
                         <div class="bg-gray-100 flex flex-col gap-4 p-4 border rounded">
                             <div class="flex flex-col items-center">
-                                <span class="text-[10px] uppercase font-bold opacity-50 mb-1">Draufsicht (L x B)</span>
+                                <span class="text-[10px] uppercase font-bold opacity-50 mb-1">Draufsicht</span>
                                 <svg id="visualizer" viewBox="0 0 300 300" class="max-w-full max-h-[400px] drop-shadow-md bg-white rounded"></svg>
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="flex flex-col items-center">
-                                    <span class="text-[10px] uppercase font-bold opacity-50 mb-1">Seitenansicht (L x H)</span>
+                                    <span class="text-[10px] uppercase font-bold opacity-50 mb-1">Vorderansicht</span>
                                     <svg id="visualizer-side-l" viewBox="0 0 300 100" class="w-full h-auto max-h-[200px] drop-shadow-md bg-white rounded"></svg>
                                 </div>
                                 <div class="flex flex-col items-center">
-                                    <span class="text-[10px] uppercase font-bold opacity-50 mb-1">Seitenansicht (B x H)</span>
+                                    <span class="text-[10px] uppercase font-bold opacity-50 mb-1">Seitenansicht</span>
                                     <svg id="visualizer-side-w" viewBox="0 0 300 100" class="w-full h-auto max-h-[200px] drop-shadow-md bg-white rounded"></svg>
                                 </div>
                             </div>
@@ -562,7 +564,6 @@
                 document.getElementById('vol-util').innerText = `${volUtil}% Volumen`;
 
                 const tooBig = packL > packCase.l || packW > packCase.w || format.height > packCase.h;
-                document.getElementById('dim-warning').classList.toggle('hidden', !tooBig);
 
                 const centerOffsetX = (packCase.l - packL) / 2;
                 const centerOffsetY = (packCase.w - packW) / 2;
@@ -781,6 +782,22 @@
         }
 
         function deleteComp(i) { comparisons.splice(i, 1); localStorage.setItem('battComps', JSON.stringify(comparisons)); renderComparisons(); }
+        
+        function rotateCase() {
+            const caseIdx = document.getElementById('case-select').value;
+            const c = cases[caseIdx];
+            if (!c) return;
+            const oldL = c.l;
+            c.l = c.w;
+            c.w = c.h;
+            c.h = oldL;
+            localStorage.setItem('battCases', JSON.stringify(cases));
+            if (document.getElementById('editor-case-select').value == caseIdx) {
+                loadCaseToEditor();
+            }
+            updateCalc();
+        }
+
         function exportData() { const blob = new Blob([JSON.stringify({ cells, cases, formats, comparisons }, null, 2)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'batt-config.json'; a.click(); }
         function importData(e) { const f = e.target.files[0]; if(!f) return; const r = new FileReader(); r.onload = (ev) => { const d = JSON.parse(ev.target.result); if(d.cells) cells = d.cells; if(d.cases) cases = d.cases; if(d.formats) formats = d.formats; if(d.comparisons) comparisons = d.comparisons; localStorage.setItem('battCells', JSON.stringify(cells)); localStorage.setItem('battCases', JSON.stringify(cases)); localStorage.setItem('battFormats', JSON.stringify(formats)); localStorage.setItem('battComps', JSON.stringify(comparisons)); init(); }; r.readAsText(f); }
 
