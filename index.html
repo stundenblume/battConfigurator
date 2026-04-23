@@ -223,7 +223,7 @@
                                         <select id="case-select" class="select select-bordered w-full" onchange="updateCalc()"></select>
                                     </div>
                                 </div>
-                                <div class="grid grid-cols-4 gap-2 text-center">
+                                <div class="grid grid-cols-5 gap-2 text-center">
                                     <div class="form-control">
                                         <label class="label justify-center"><span class="label-text">S</span></label>
                                         <input type="number" id="pack-s" value="20" class="input input-bordered w-full" onchange="updateCalc()" />
@@ -231,6 +231,10 @@
                                     <div class="form-control">
                                         <label class="label justify-center"><span class="label-text">P</span></label>
                                         <input type="number" id="pack-p" value="3" class="input input-bordered w-full" onchange="updateCalc()" />
+                                    </div>
+                                    <div class="form-control">
+                                        <label class="label justify-center"><span class="label-text">Ebenen</span></label>
+                                        <input type="number" id="pack-layers" value="1" min="1" class="input input-bordered w-full" onchange="updateCalc()" />
                                     </div>
                                     <div class="form-control">
                                         <label class="label justify-center"><span class="label-text">L-Reihe</span></label>
@@ -329,7 +333,7 @@
             </div>
         </div>
         <footer class="mt-8 text-center text-xs opacity-30">
-            Code zuletzt geändert: 2026-04-20 14:15:00
+            Code zuletzt geändert: 2026-04-20 15:30:00
         </footer>
     </div>
 
@@ -534,8 +538,10 @@
                 document.getElementById('res-cost').innerText = cost + '€';
                 document.getElementById('res-weight-costkwh').innerText = `${priceKwh}€/kWh | Geh. inkl.`;
 
-                const numHoriz = parseInt(document.getElementById('layout-rows').value) || totalCells;
-                const numVert = Math.ceil(totalCells / numHoriz);
+                const layers = Math.max(1, parseInt(document.getElementById('pack-layers').value) || 1);
+                const cellsPerLayer = Math.ceil(totalCells / layers);
+                const numHoriz = Math.min(cellsPerLayer, parseInt(document.getElementById('layout-rows').value) || cellsPerLayer);
+                const numVert = Math.ceil(cellsPerLayer / numHoriz);
                 const isHoney = document.getElementById('layout-type').value === 'honey';
                 
                 const fillVertical = (numVert % p === 0 && numHoriz % p !== 0) || (numVert === p);
@@ -544,53 +550,54 @@
                 const visualDia = format.dia || (format.gridH - 1.1);
 
                 if (fillVertical) {
-                    // Rotated Honeycomb: Stagger columns vertically
                     packL = (numHoriz - 1) * (isHoney ? format.honeyV : format.gridH) + visualDia;
                     packW = numVert * format.gridV + (isHoney ? format.gridV/2 : 0);
                 } else {
-                    // Standard Honeycomb: Stagger rows horizontally
                     packL = numHoriz * format.gridH + (isHoney ? format.gridH/2 : 0);
                     packW = (numVert - 1) * (isHoney ? format.honeyV : format.gridV) + visualDia;
                 }
 
+                const packH = format.height * layers;
                 const caseArea = packCase.l * packCase.w;
                 const packArea = packL * packW;
                 const areaUtil = caseArea > 0 ? Math.round((packArea / caseArea) * 100) : 0;
                 document.getElementById('area-util').innerText = `${areaUtil}% Fläche`;
 
                 const caseVol = caseArea * packCase.h;
-                const packVolVal = packArea * format.height;
+                const packVolVal = packArea * packH;
                 const volUtil = caseVol > 0 ? Math.round((packVolVal / caseVol) * 100) : 0;
                 document.getElementById('vol-util').innerText = `${volUtil}% Volumen`;
 
-                const tooBig = packL > packCase.l || packW > packCase.w || format.height > packCase.h;
+                const tooBig = packL > packCase.l || packW > packCase.w || packH > packCase.h;
 
                 const centerOffsetX = (packCase.l - packL) / 2;
                 const centerOffsetY = (packCase.w - packW) / 2;
-                const centerOffsetH = (packCase.h - format.height) / 2;
+                const centerOffsetH = (packCase.h - packH) / 2;
 
                 const pad = 20;
                 const cellClass = tooBig ? 'is-invalid' : '';
                 const groupColors = ['#22c55e', '#facc15']; 
 
                 const getCoords = (idx) => {
+                    const layerIdx = Math.floor(idx / cellsPerLayer);
+                    const i = idx % cellsPerLayer;
                     let r, c, offX = 0, offY = 0;
                     if (fillVertical) {
-                        r = Math.floor(idx / numVert); 
-                        c = idx % numVert;             
+                        r = Math.floor(i / numVert); 
+                        c = i % numVert;             
                         if (r % 2 === 1) c = (numVert - 1) - c; 
                         if (isHoney && r % 2 === 1) offY = format.gridV / 2;
                         const cx = pad + centerOffsetX + r * (isHoney ? format.honeyV : format.gridH) + visualDia/2;
                         const cy = pad + centerOffsetY + c * format.gridV + format.gridV/2 + offY;
-                        return { cx, cy };
+                        return { cx, cy, layerIdx };
                     } else {
-                        c = Math.floor(idx / numHoriz); 
-                        r = idx % numHoriz;             
+                        c = Math.floor(i / numHoriz); 
+                        r = i % numHoriz;             
                         if (c % 2 === 1) r = (numHoriz - 1) - r; 
                         if (isHoney && c % 2 === 1) offX = format.gridH / 2;
                         const cx = pad + centerOffsetX + r * format.gridH + format.gridH/2 + offX;
                         const cy = pad + centerOffsetY + c * (isHoney ? format.honeyV : format.gridV) + visualDia/2;
-                        return { cx, cy };
+                        return { cx, cy, layerIdx };
                     }
                 };
 
@@ -601,7 +608,7 @@
                 
                 // --- SIDE VIEW L (Length x Height) ---
                 const maxSideDim = Math.max(packCase.l, packL, packCase.w, packW);
-                const maxSideH = Math.max(packCase.h, format.height);
+                const maxSideH = Math.max(packCase.h, packH);
                 
                 const svgSideL = document.getElementById('visualizer-side-l');
                 svgSideL.setAttribute('viewBox', `0 0 ${maxSideDim + pad * 2} ${maxSideH + pad * 2}`);
@@ -612,12 +619,12 @@
                 svgSideW.setAttribute('viewBox', `0 0 ${maxSideDim + pad * 2} ${maxSideH + pad * 2}`);
                 let svgSW = `<rect x="${pad}" y="${pad}" width="${packCase.w}" height="${packCase.h}" fill="none" stroke="#666" stroke-dasharray="5,5" /><text x="${pad}" y="${pad - 5}" font-size="12" fill="#666">${packCase.w}x${packCase.h}mm</text>`;
 
-                // Nickel strips (Top only)
+                // Nickel strips (Top layer only)
                 for(let g=0; g<s; g++) {
                     let points = [];
                     for(let i=g*p; i<(g+1)*p && i<totalCells; i++) {
-                        const { cx, cy } = getCoords(i);
-                        points.push(`${cx},${cy}`);
+                        const { cx, cy, layerIdx } = getCoords(i);
+                        if (layerIdx === 0) points.push(`${cx},${cy}`);
                     }
                     if (points.length > 1) {
                         svgC += `<polyline points="${points.join(' ')}" fill="none" stroke="#64748b" stroke-width="${visualDia * 0.5}" stroke-linecap="round" stroke-linejoin="round" opacity="0.6" />`;
@@ -626,27 +633,29 @@
 
                 // Cells
                 for(let i=0; i<totalCells; i++) {
-                    const { cx, cy } = getCoords(i);
+                    const { cx, cy, layerIdx } = getCoords(i);
                     const sIdx = Math.floor(i / p) + 1;
                     const groupColor = tooBig ? '#fee2e2' : groupColors[(sIdx-1) % 2];
                     const strokeColor = tooBig ? '#ef4444' : '#475569';
 
-                    // Top View
-                    svgC += `<circle cx="${cx}" cy="${cy}" r="${visualDia/2 - 0.5}" fill="${groupColor}" stroke="${strokeColor}" stroke-width="0.8" class="${cellClass}" />`;
-                    svgC += `<text x="${cx}" y="${cy + 3}" font-size="8" font-weight="bold" text-anchor="middle" fill="#000" opacity="0.7" style="pointer-events:none">S${sIdx}</text>`;
+                    // Top View (only top layer)
+                    if (layerIdx === 0) {
+                        svgC += `<circle cx="${cx}" cy="${cy}" r="${visualDia/2 - 0.5}" fill="${groupColor}" stroke="${strokeColor}" stroke-width="0.8" class="${cellClass}" />`;
+                        svgC += `<text x="${cx}" y="${cy + 3}" font-size="8" font-weight="bold" text-anchor="middle" fill="#000" opacity="0.7" style="pointer-events:none">S${sIdx}</text>`;
+                    }
 
-                    // Side Views: vertical centering
-                    const yOffset = pad + centerOffsetH;
+                    // Side Views: vertical stacking
+                    const yPos = pad + centerOffsetH + (layers - 1 - layerIdx) * format.height;
                     
-                    // Side L (X=cx, Y=from centerOffset)
-                    svgSL += `<rect x="${cx - visualDia/2}" y="${yOffset}" width="${visualDia}" height="${format.height}" fill="${groupColor}" stroke="${strokeColor}" stroke-width="0.5" opacity="${fillVertical ? 0.7 : 0.4}" />`;
+                    // Side L
+                    svgSL += `<rect x="${cx - visualDia/2}" y="${yPos}" width="${visualDia}" height="${format.height}" fill="${groupColor}" stroke="${strokeColor}" stroke-width="0.5" opacity="${fillVertical ? 0.7 : 0.4}" />`;
                     
-                    // Side W (X=cy, Y=from centerOffset)
-                    svgSW += `<rect x="${cy - visualDia/2}" y="${yOffset}" width="${visualDia}" height="${format.height}" fill="${groupColor}" stroke="${strokeColor}" stroke-width="0.5" opacity="${fillVertical ? 0.4 : 0.7}" />`;
+                    // Side W
+                    svgSW += `<rect x="${cy - visualDia/2}" y="${yPos}" width="${visualDia}" height="${format.height}" fill="${groupColor}" stroke="${strokeColor}" stroke-width="0.5" opacity="${fillVertical ? 0.4 : 0.7}" />`;
                 }
                 
-                svgC += `<text x="${pad}" y="${pad + Math.max(packCase.w, packW) + 15}" font-size="12" font-weight="bold" fill="${tooBig ? 'red' : 'green'}">Pack: ${packL.toFixed(1)} x ${packW.toFixed(1)} x ${format.height}mm</text>`;
-                
+                svgC += `<text x="${pad}" y="${pad + Math.max(packCase.w, packW) + 15}" font-size="12" font-weight="bold" fill="${tooBig ? 'red' : 'green'}">Pack: ${packL.toFixed(1)} x ${packW.toFixed(1)} x ${packH.toFixed(1)}mm</text>`;
+                                
                 svgTop.innerHTML = svgC;
                 svgSideL.innerHTML = svgSL;
                 svgSideW.innerHTML = svgSW;
@@ -667,14 +676,16 @@
 
             const s = parseInt(document.getElementById('pack-s').value) || 0;
             const p = parseInt(document.getElementById('pack-p').value) || 0;
+            const layers = Math.max(1, parseInt(document.getElementById('pack-layers').value) || 1);
             const total = s * p;
+            const cellsPerLayer = Math.ceil(total / layers);
             const packVolt = s * 3.7;
             const packContA = p * cell.cont;
             const reqA = packVolt > 0 ? (power / packVolt) : 0;
             const loadPercent = packContA > 0 ? Math.round((reqA / packContA) * 100) : 0;
 
-            const numHoriz = parseInt(document.getElementById('layout-rows').value) || total;
-            const numVert = Math.ceil(total / numHoriz);
+            const numHoriz = Math.min(cellsPerLayer, parseInt(document.getElementById('layout-rows').value) || cellsPerLayer);
+            const numVert = Math.ceil(cellsPerLayer / numHoriz);
             const isHoney = document.getElementById('layout-type').value === 'honey';
             
             const fillVertical = (numVert % p === 0 && numHoriz % p !== 0) || (numVert === p);
@@ -689,16 +700,17 @@
                 packW = (numVert - 1) * (isHoney ? format.honeyV : format.gridV) + visualDia;
             }
             
+            const packH = format.height * layers;
             const caseArea = packCase.l * packCase.w;
             const packArea = packL * packW;
             const areaUtil = caseArea > 0 ? Math.round((packArea / caseArea) * 100) : 0;
-            const volUtil = (caseArea * packCase.h) > 0 ? Math.round((packArea * format.height / (caseArea * packCase.h)) * 100) : 0;
+            const volUtil = (caseArea * packCase.h) > 0 ? Math.round((packArea * packH / (caseArea * packCase.h)) * 100) : 0;
 
             comparisons.push({ 
                 name: document.getElementById('pack-name').value || `${cell.name} ${s}S${p}P`, 
                 cellIdx: parseInt(cellIdx), 
                 caseIdx: parseInt(caseIdx), 
-                s, p, power, loadPercent, areaUtil, volUtil,
+                s, p, layers, power, loadPercent, areaUtil, volUtil,
                 lRows: document.getElementById('layout-rows').value, 
                 lType: document.getElementById('layout-type').value, 
                 wh: Math.round(packVolt * p * cell.cap / 1000), 
@@ -717,6 +729,7 @@
             document.getElementById('case-select').value = c.caseIdx;
             document.getElementById('pack-s').value = c.s;
             document.getElementById('pack-p').value = c.p;
+            document.getElementById('pack-layers').value = c.layers || 1;
             document.getElementById('pack-power').value = c.power || 3000;
             document.getElementById('layout-rows').value = c.lRows;
             document.getElementById('layout-type').value = c.lType;
