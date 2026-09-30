@@ -4,5 +4,5 @@
 #   SSH: agent-ssh <kurzname> <befehl>
 # Details: ~/Projekte/agent-tools/README.md
 
-dienste = ["GITEA", "WINTGLOBAL_FTP"]
+dienste = ["GITEA", "WINTGLOBAL_FTP", "GITHUB"]
 ssh     = []
