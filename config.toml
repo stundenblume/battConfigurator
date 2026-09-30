@@ -1,0 +1,8 @@
+# Dienste, die Agenten im Homelab nutzen. Keine Secrets, keine URLs!
+# Alles kommt aus agenten.kdbx über claude-start:
+#   <NAME>_URL, <NAME>_USER, <NAME>_PASSWORD bzw. <NAME>_TOKEN
+#   SSH: agent-ssh <kurzname> <befehl>
+# Details: ~/Projekte/agent-tools/README.md
+
+dienste = ["GITEA", "WINTGLOBAL_FTP"]
+ssh     = []
