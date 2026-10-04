@@ -50,9 +50,12 @@
                             <div class="form-control w-full">
                                 <label class="label">
                                     <span class="label-text">Zellen Name</span>
-                                    <div class="flex gap-2 text-xs">
+                                    <div class="flex flex-wrap gap-2 text-xs">
                                         <a id="cell-link-google" href="#" target="_blank" class="link link-primary font-bold">Google ↗</a>
                                         <a id="cell-link-lygte" href="#" target="_blank" class="link link-secondary font-bold">Lygte ↗</a>
+                                        <a id="cell-link-moos" href="#" target="_blank" class="link link-info font-bold">Moos ↗</a>
+                                        <a id="cell-link-blf" href="#" target="_blank" class="link link-warning font-bold">BLF ↗</a>
+                                        <a id="cell-link-dampf" href="#" target="_blank" class="link link-success font-bold">Dampf ↗</a>
                                         <a id="cell-link-custom" href="#" target="_blank" class="link link-accent font-bold hidden">Link ↗</a>
                                     </div>
                                 </label>
@@ -71,6 +74,16 @@
                             <div class="form-control">
                                 <label class="label"><span class="label-text text-xs font-bold">Kapazität (mAh)</span></label>
                                 <input type="number" id="cell-cap" value="3000" class="input input-bordered w-full" />
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div class="form-control">
+                                    <label class="label"><span class="label-text text-xs">Kapazität @10A (mAh)</span></label>
+                                    <input type="number" id="cell-cap10" step="1" class="input input-bordered w-full" />
+                                </div>
+                                <div class="form-control">
+                                    <label class="label"><span class="label-text text-xs">Gewicht (g)</span></label>
+                                    <input type="number" id="cell-weight" step="0.1" class="input input-bordered w-full" />
+                                </div>
                             </div>
                             <div class="grid grid-cols-2 gap-2">
                                 <div class="form-control">
@@ -267,10 +280,11 @@
                 </div>
 
                 <!-- Result Stats -->
-                <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-                    <div class="stats shadow bg-base-100 border border-base-300"><div class="stat px-4 py-2"><div class="stat-title text-xs">Zellen</div><div id="res-total-cells" class="stat-value text-lg">-</div></div></div>
-                    <div class="stats shadow bg-base-100 border border-base-300"><div class="stat px-4 py-2"><div class="stat-title text-xs">Volt</div><div id="res-volt" class="stat-value text-lg">-</div></div></div>
+                <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
+                    <div class="stats shadow bg-base-100 border border-base-300 w-full h-full"><div class="stat px-4 py-2 flex flex-col justify-center"><div class="stat-title text-xs">Zellen</div><div id="res-total-cells" class="stat-value text-3xl">-</div></div></div>
+                    <div class="stats shadow bg-base-100 border border-base-300 w-full h-full"><div class="stat px-4 py-2 flex flex-col justify-center"><div class="stat-title text-xs">Spannung</div><div id="res-volt" class="stat-value text-3xl">-</div></div></div>
                     <div class="stats shadow bg-base-100 border border-base-300"><div class="stat px-4 py-2"><div class="stat-title text-xs">Energie</div><div id="res-cap" class="stat-value text-lg">-</div><div id="res-wh" class="stat-desc text-xs">-</div></div></div>
+                    <div class="stats shadow bg-base-100 border border-base-300"><div class="stat px-4 py-2"><div class="stat-title text-xs">Gewicht</div><div id="res-weight" class="stat-value text-lg">-</div><div class="stat-desc text-xs">nur Zellen</div></div></div>
                     <div class="stats shadow bg-base-100 border border-base-300"><div class="stat px-4 py-2"><div class="stat-title text-xs">Last/Strom</div><div id="res-util" class="stat-value text-lg">-</div><div id="res-cont" class="stat-desc text-xs">-</div></div></div>
                     <div class="stats shadow bg-base-100 border border-base-300"><div class="stat px-4 py-2"><div class="stat-title text-xs">Kosten</div><div id="res-cost" class="stat-value text-lg">-</div><div id="res-weight-costkwh" class="stat-desc text-xs">-</div></div></div>
                 </div>
@@ -320,6 +334,8 @@
                                         <th class="sortable" onclick="sortComparisons('areaUtil')">Fläche <span id="sort-areaUtil"></span></th>
                                         <th class="sortable" onclick="sortComparisons('volUtil')">Volumen <span id="sort-volUtil"></span></th>
                                         <th class="sortable" onclick="sortComparisons('wh')">Energie <span id="sort-wh"></span></th>
+                                        <th class="sortable" onclick="sortComparisons('weightG')">Gewicht <span id="sort-weightG"></span></th>
+                                        <th class="sortable" onclick="sortComparisons('whKg')">Wh/kg <span id="sort-whKg"></span></th>
                                         <th class="sortable" onclick="sortComparisons('cost')">Kosten <span id="sort-cost"></span></th>
                                         <th>Links</th>
                                         <th></th>
@@ -432,6 +448,8 @@
             document.getElementById('cell-price').value = cell.price;
             document.getElementById('cell-price100').value = cell.price100;
             document.getElementById('cell-cap').value = cell.cap;
+            document.getElementById('cell-cap10').value = cell.cap10 ?? '';
+            document.getElementById('cell-weight').value = cell.weight ?? '';
             document.getElementById('cell-cont').value = cell.cont;
             document.getElementById('cell-max').value = cell.max;
             document.getElementById('cell-format').value = cell.formatId;
@@ -439,9 +457,9 @@
             document.getElementById('cell-notes').value = cell.notes || '';
             updateCellLinks(cell.name, cell.customLink);
         }
-        function newCell() { document.getElementById('cell-name').value = ''; document.getElementById('cell-notes').value = ''; document.getElementById('cell-custom-link').value = ''; updateCellLinks('', ''); }
+        function newCell() { document.getElementById('cell-name').value = ''; document.getElementById('cell-notes').value = ''; document.getElementById('cell-custom-link').value = ''; document.getElementById('cell-cap10').value = ''; document.getElementById('cell-weight').value = ''; updateCellLinks('', ''); }
         function addCell() {
-            const cellData = { id: Date.now(), name: document.getElementById('cell-name').value || 'Unbekannt', price: parseFloat(document.getElementById('cell-price').value), price100: parseFloat(document.getElementById('cell-price100').value), cap: parseFloat(document.getElementById('cell-cap').value), cont: parseFloat(document.getElementById('cell-cont').value), max: parseFloat(document.getElementById('cell-max').value), notes: document.getElementById('cell-notes').value, formatId: parseInt(document.getElementById('cell-format').value), customLink: document.getElementById('cell-custom-link').value };
+            const cellData = { id: Date.now(), name: document.getElementById('cell-name').value || 'Unbekannt', price: parseFloat(document.getElementById('cell-price').value), price100: parseFloat(document.getElementById('cell-price100').value), cap: parseFloat(document.getElementById('cell-cap').value), cap10: numOrNull('cell-cap10'), weight: numOrNull('cell-weight'), cont: parseFloat(document.getElementById('cell-cont').value), max: parseFloat(document.getElementById('cell-max').value), notes: document.getElementById('cell-notes').value, formatId: parseInt(document.getElementById('cell-format').value), customLink: document.getElementById('cell-custom-link').value };
             const idx = cells.findIndex(c => c.name === cellData.name);
             if (idx >= 0) cells[idx] = cellData; else cells.push(cellData);
             localStorage.setItem('battCells', JSON.stringify(cells));
@@ -457,6 +475,9 @@
         function updateCellLinks(name, custom) {
             document.getElementById('cell-link-google').href = name ? `https://www.google.com/search?q=${encodeURIComponent(name)}` : '#';
             document.getElementById('cell-link-lygte').href = name ? `https://www.google.com/search?q=site:lygte-info.dk+${encodeURIComponent(name)}` : '#';
+            document.getElementById('cell-link-moos').href = name ? `https://www.google.com/search?q=${encodeURIComponent('Moos ' + name)}` : '#';
+            document.getElementById('cell-link-blf').href = name ? `https://www.google.com/search?q=${encodeURIComponent('BLF test ' + name)}` : '#';
+            document.getElementById('cell-link-dampf').href = name ? `https://www.google.com/search?q=${encodeURIComponent(name + ' site:Dampfakkus.de')}` : '#';
             const cLink = document.getElementById('cell-link-custom');
             if (custom) { cLink.href = custom; cLink.classList.remove('hidden'); } else { cLink.classList.add('hidden'); }
         }
@@ -500,6 +521,30 @@
         }
 
         // --- Calculator ---
+        // Felder aus älteren Exporten fehlen oder sind null: alles ohne Wert wird als "–" angezeigt
+        function numOrNull(id) {
+            const v = parseFloat(document.getElementById(id).value);
+            return Number.isFinite(v) ? v : null;
+        }
+        function fmtVal(v, digits, unit) {
+            return Number.isFinite(v) ? v.toFixed(digits) + unit : '–';
+        }
+        function fmtKwh(wh) {
+            return Number.isFinite(wh) ? (wh / 1000).toFixed(2) + ' kWh' : '–';
+        }
+        function fmtWeight(g) {
+            if (!Number.isFinite(g)) return '–';
+            return g >= 1000 ? (g / 1000).toFixed(2) + 'kg' : Math.round(g) + 'g';
+        }
+        function packExtras(cell, s, p) {
+            const totalCells = s * p;
+            const weightG = Number.isFinite(cell.weight) && cell.weight > 0 ? totalCells * cell.weight : null;
+            const nominalWh = s * 3.7 * p * cell.cap / 1000;
+            const wh10 = Number.isFinite(cell.cap10) ? s * 3.7 * p * cell.cap10 / 1000 : null;
+            const whKg = weightG ? nominalWh / (weightG / 1000) : null;
+            return { weightG, wh10, whKg };
+        }
+
         function updateCalc() {
             try {
                 const cellIdx = document.getElementById('cell-select').value;
@@ -523,15 +568,18 @@
 
                 document.getElementById('res-volt').innerText = packVolt.toFixed(1) + 'V';
                 document.getElementById('res-cap').innerText = (p * cell.cap / 1000).toFixed(1) + 'Ah';
-                document.getElementById('res-wh').innerText = Math.round(nominalWh) + 'Wh';
-                
+                const extras = packExtras(cell, s, p);
+                document.getElementById('res-wh').innerHTML = `${fmtKwh(nominalWh)}<br>${fmtVal(extras.whKg, 0, ' Wh/kg')}<br>10A: ${fmtKwh(extras.wh10)}`;
+                document.getElementById('res-weight').innerText = fmtWeight(extras.weightG);
+
                 const utilVal = document.getElementById('res-util');
                 utilVal.innerText = `${loadPercent}% Last`;
                 utilVal.className = 'stat-value text-lg';
                 if (loadPercent >= 95) utilVal.classList.add('text-error');
                 else if (loadPercent >= 80) utilVal.classList.add('text-warning');
 
-                document.getElementById('res-cont').innerText = `${reqA.toFixed(1)}A / ${packContA}A`;
+                const perCellA = p > 0 ? reqA / p : 0;
+                document.getElementById('res-cont').innerHTML = `Strom/Zelle ${perCellA.toFixed(1)}A<br>ist ${reqA.toFixed(1)}A<br>max. ${Math.round(packContA * 10) / 10}A`;
                 
                 const cost = Math.round(totalCells * (totalCells >= 100 ? cell.price100 : cell.price) + packCase.price);
                 const priceKwh = nominalWh > 0 ? Math.round(cost / (nominalWh / 1000)) : 0;
@@ -705,15 +753,18 @@
             const packArea = packL * packW;
             const areaUtil = caseArea > 0 ? Math.round((packArea / caseArea) * 100) : 0;
             const volUtil = (caseArea * packCase.h) > 0 ? Math.round((packArea * packH / (caseArea * packCase.h)) * 100) : 0;
+            const extras = packExtras(cell, s, p);
 
-            comparisons.push({ 
-                name: document.getElementById('pack-name').value || `${cell.name} ${s}S${p}P`, 
-                cellIdx: parseInt(cellIdx), 
-                caseIdx: parseInt(caseIdx), 
+            comparisons.push({
+                name: document.getElementById('pack-name').value || `${cell.name} ${s}S${p}P`,
+                cellIdx: parseInt(cellIdx),
+                caseIdx: parseInt(caseIdx),
                 s, p, layers, power, loadPercent, areaUtil, volUtil,
-                lRows: document.getElementById('layout-rows').value, 
-                lType: document.getElementById('layout-type').value, 
-                wh: Math.round(packVolt * p * cell.cap / 1000), 
+                lRows: document.getElementById('layout-rows').value,
+                lType: document.getElementById('layout-type').value,
+                wh: Math.round(packVolt * p * cell.cap / 1000),
+                weightG: extras.weightG,
+                whKg: extras.whKg,
                 cost: Math.round(total * (total >= 100 ? cell.price100 : cell.price) + packCase.price), 
                 notes: document.getElementById('pack-notes').value 
             });
@@ -766,7 +817,7 @@
             const list = document.getElementById('comp-list');
             if (!list) return;
 
-            const columns = ['name', 's', 'loadPercent', 'areaUtil', 'volUtil', 'wh', 'cost'];
+            const columns = ['name', 's', 'loadPercent', 'areaUtil', 'volUtil', 'wh', 'weightG', 'whKg', 'cost'];
             columns.forEach(col => {
                 const el = document.getElementById(`sort-${col}`);
                 if (el) el.innerText = sortState.column === col ? (sortState.direction === 'asc' ? ' 🔼' : ' 🔽') : '';
@@ -782,7 +833,7 @@
                     <td class="text-xs font-bold ${c.loadPercent > 100 ? 'text-error' : 'text-success'}">${c.loadPercent || 0}%</td>
                     <td class="text-xs">${c.areaUtil || 0}%</td>
                     <td class="text-xs">${c.volUtil || 0}%</td>
-                    <td>${c.wh}Wh</td><td>${c.cost}€</td>
+                    <td>${c.wh}Wh</td><td class="text-xs">${fmtWeight(c.weightG)}</td><td class="text-xs">${fmtVal(c.whKg, 0, '')}</td><td>${c.cost}€</td>
                     <td>
                         <div class="flex gap-1">
                             <a href="${cell.customLink || `https://www.google.com/search?q=${encodeURIComponent(cell.name)}`}" target="_blank" onclick="event.stopPropagation()" class="btn btn-ghost btn-xs">Cell</a>
